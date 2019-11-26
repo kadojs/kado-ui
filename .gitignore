@@ -1,0 +1,9 @@
+node_modules
+.idea
+/config.*
+/log
+npm-debug.log
+/.dbreload*
+**/public/dist/*.js
+interface/**/asset/*Pkg.js
+interface/**/public/dist/*
