@@ -42,6 +42,8 @@ exports.list = (req,res) => {
  * @param {object} res
  */
 exports.create = (req,res) => {
+  res.locals._asset.addScriptOnce('/js/util.js','defer')
+  res.locals._asset.addScriptOnce('/doc/static/create.js','defer')
   res.render('doc/project/create',{
     _pageTitle: K._l.doc.doc_project + ' ' + K._l.create})
 }
@@ -53,6 +55,7 @@ exports.create = (req,res) => {
  * @param {object} res
  */
 exports.edit = (req,res) => {
+  res.locals._asset.addScriptOnce('/doc/static/revert.js')
   let o = res.Q
   o.include = [DocProjectVersion]
   DocProject.findByPk(req.query.id,o)

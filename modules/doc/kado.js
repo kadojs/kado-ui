@@ -147,6 +147,8 @@ exports.admin = (app) => {
   app.post('/doc/version/save',admin.version.save)
   app.post('/doc/version/remove',admin.version.remove)
   app.get('/doc/version/remove',admin.version.remove)
+  //static routes
+  app.use('/doc/static',app.static(__dirname + '/admin/public'))
 }
 
 
