@@ -8,6 +8,8 @@
  */
 const P = require('bluebird')
 const K = require('kado').getInstance()
+const datatable = require('sequelize-datatable')
+const datatableView = require(K.lib('datatableView'))
 const fs = require('fs')
 const ObjectManage = require('object-manage')
 const config = K.config
@@ -100,8 +102,7 @@ exports.list = (req,res) => {
     res.render(res.locals._view.get('error'),{
       error: K._l.setting.no_settings_exist})
   } else {
-    res.locals._asset.addScriptOnce('/dist/dataTables.js')
-    res.locals._asset.addScriptOnce('/js/dataTableList.js','defer')
+    datatableView(res)
     res.render(__dirname + '/view/list',{
       list: result.rows
     })
