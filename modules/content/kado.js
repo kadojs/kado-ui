@@ -134,6 +134,7 @@ exports.admin = (app) => {
  */
 exports.main = (app) => {
   let main = require('./main')
+  app.get('/content',(req,res)=>{res.redirect(301,'/')})
   //register routes
   app.get('/content/:contentUri',main.entry)
   //register view
