@@ -167,7 +167,7 @@ exports.save = (req,res) => {
       } else {
         req.flash('success',{
           message: K._l.doc.entry + ' ' + (isNew ? K._l.created : K._l.saved),
-          href: res.locals._u._doc_edit + '?id=' + doc.id,
+          href: res.locals._uri._doc_edit + '?id=' + doc.id,
           name: doc.id
         })
         res.redirect('/doc/list')
