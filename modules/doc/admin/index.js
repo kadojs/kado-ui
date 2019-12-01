@@ -62,8 +62,8 @@ exports.list = (req,res) => {
  * @param {object} res
  */
 exports.create = (req,res) => {
-  res.locals._asset.addScriptOnce('/js/util.js','defer')
-  res.locals._asset.addScriptOnce('/doc/static/create.js','defer')
+  res.locals._asset.addScriptOnce('/js/util.js')
+  res.locals._asset.addScriptOnce('/js/mirrorToUri.js')
   let q = res.Q
   q.include = [DocProject]
   DocProjectVersion.findAll(q)
@@ -83,6 +83,8 @@ exports.create = (req,res) => {
  */
 exports.edit = (req,res) => {
   tuiEditor(res)
+  res.locals._asset.addScriptOnce('/js/loadTuiEditor.js')
+  res.locals._asset.addScriptOnce('/doc/static/revertDoc.js')
   let q = res.Q
   q.include = [{model: DocRevision}]
   Doc.findByPk(req.query.id,q)

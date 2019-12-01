@@ -45,8 +45,8 @@ exports.list = (req,res) => {
  * @param {object} res
  */
 exports.create = (req,res) => {
-  res.locals._asset.addScriptOnce('/js/util.js','defer')
-  res.locals._asset.addScriptOnce('/blog/static/create.js','defer')
+  res.locals._asset.addScriptOnce('/js/util.js')
+  res.locals._asset.addScriptOnce('/js/mirrorToUri.js')
   res.render('blog/create',{_pageTitle: K._l.blog.blog + ' ' + K._l.create})
 }
 
@@ -58,7 +58,7 @@ exports.create = (req,res) => {
  */
 exports.edit = (req,res) => {
   tuiEditor(res)
-  res.locals._asset.addScriptOnce('/blog/static/edit.js')
+  res.locals._asset.addScriptOnce('/js/loadTuiEditor.js')
   let q = res.Q
   q.include = [{model: BlogRevision}]
   Blog.findByPk(req.query.id,q)

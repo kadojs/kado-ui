@@ -40,6 +40,8 @@ exports.list = (req,res) => {
  * @param {object} res
  */
 exports.create = (req,res) => {
+  res.locals._asset.addScriptOnce('/js/util.js')
+  res.locals._asset.addScriptOnce('/js/mirrorToUri.js')
   res.render('content/nav/create')
 }
 

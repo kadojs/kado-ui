@@ -93,7 +93,6 @@ exports.list = (req,res) => {
  * @param {object} res
  */
 exports.entry = (req,res) => {
-  tuiViewer(res)
   let docList
   let q = res.Q
   q.include = [
@@ -120,6 +119,9 @@ exports.entry = (req,res) => {
     })
     .then((result) => {
       if(!result) throw new Error('Document not found')
+      //load tui viewer
+      tuiViewer(res)
+      res.locals._asset.addScriptOnce('/js/loadTuiViewer.js')
       result.contentRaw = result.content
       result.content = base64.fromByteArray(
         Buffer.from(result.content,'utf-8'))

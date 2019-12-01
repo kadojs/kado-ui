@@ -43,8 +43,8 @@ exports.list = (req,res) => {
  * @param {object} res
  */
 exports.create = (req,res) => {
-  res.locals._asset.addScriptOnce('/js/util.js','defer')
-  res.locals._asset.addScriptOnce('/doc/static/create.js','defer')
+  res.locals._asset.addScriptOnce('/js/util.js')
+  res.locals._asset.addScriptOnce('/js/mirrorToUri.js')
   res.render('doc/project/create',{
     _pageTitle: K._l.doc.doc_project + ' ' + K._l.create})
 }
@@ -56,7 +56,6 @@ exports.create = (req,res) => {
  * @param {object} res
  */
 exports.edit = (req,res) => {
-  res.locals._asset.addScriptOnce('/doc/static/revert.js')
   let o = res.Q
   o.include = [DocProjectVersion]
   DocProject.findByPk(req.query.id,o)
@@ -101,7 +100,8 @@ exports.save = (req,res) => {
           href: '/doc/project/edit?id=' + result.id,
           name: result.id
         })
-        req.flash('info','NOTE: Create a version below before creating documents.')
+        req.flash('info','NOTE: Create a version below ' +
+          'before creating documents.')
         res.redirect('/doc/project/edit?id=' + result.id)
       }
     })

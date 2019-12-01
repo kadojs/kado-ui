@@ -119,8 +119,6 @@ exports.main = (app) => {
   app.view.add('blog/list',__dirname + '/main/view/list.html')
   //register navigation
   app.nav.addGroup('/blog','Blog','file-alt')
-  //static routes for the module
-  app.use('/blog/static',app.static(__dirname + '/main/public'))
 }
 
 

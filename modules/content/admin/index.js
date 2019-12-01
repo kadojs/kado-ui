@@ -52,8 +52,8 @@ exports.list = (req,res) => {
  * @param {object} res
  */
 exports.create = (req,res) => {
-  res.locals._asset.addScriptOnce('/js/util.js','defer')
-  res.locals._asset.addScriptOnce('/content/static/create.js','defer')
+  res.locals._asset.addScriptOnce('/js/util.js')
+  res.locals._asset.addScriptOnce('/js/mirrorToUri.js')
   res.render('content/create',{
     _pageTitle: K._l.content.content + ' ' + K._l.create})
 }
@@ -66,8 +66,8 @@ exports.create = (req,res) => {
  */
 exports.edit = (req,res) => {
   tuiEditor(res)
-  res.locals._asset.addScriptOnce('/content/static/edit.js','defer')
-  res.locals._asset.addScriptOnce('/content/static/revertContent.js','defer')
+  res.locals._asset.addScriptOnce('/js/loadTuiEditor.js')
+  res.locals._asset.addScriptOnce('/content/static/revertContent.js')
   let q = res.Q
   q.include = [{model: ContentRevision}]
   Content.findByPk(req.query.id,q)

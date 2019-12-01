@@ -20,7 +20,6 @@ const Content = sequelize.models.Content
  * @param {object} res
  */
 exports.entry = (req,res) => {
-  tuiViewer(res)
   let uri = req.params.contentUri
   let q = res.Q
   q.where = {uri: uri, active: true}
@@ -44,6 +43,9 @@ exports.entry = (req,res) => {
           throw new Error('Content not found')
         }
       } else {
+        //load tui viewer
+        tuiViewer(res)
+        res.locals._asset.addScriptOnce('/js/loadTuiViewer.js')
         result.contentRaw = result.content
         result.content = base64.fromByteArray(Buffer.from(result.content,'utf-8'))
         res.render('content/entry',{

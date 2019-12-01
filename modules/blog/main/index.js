@@ -43,7 +43,7 @@ exports.index = (req,res) => {
  */
 exports.entry = (req,res) => {
   tuiViewer(res)
-  res.locals._asset.addScriptOnce('/blog/static/view.js')
+  res.locals._asset.addScriptOnce('/js/loadTuiViewer.js')
   let q = res.Q
   q.where = {uri: req.params.blogUri}
   Blog.findOne(q)
