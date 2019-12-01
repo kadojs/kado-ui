@@ -1,0 +1,10 @@
+{{>header}}
+  <main role="main" class="container">
+    <div class="blog-post">
+      <h2 class="blog-post-title">{{blog.title}}</h2>
+      <p class="blog-post-meta">{{#_printDate}}{{blog.datePosted}}{{/_printDate}}</p>
+      <div class="tui-content" id="content" data-src="{{{blog.content}}}"></div>
+      <noscript><div class="basic-content">{{{blog.contentRaw}}}</div></noscript>
+    </div><!-- /.blog-post -->
+  </main>
+{{>footer}}
