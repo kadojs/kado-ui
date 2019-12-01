@@ -12,30 +12,20 @@ exports._kado = {
   enabled: true,
   name: 'doc',
   title: 'Doc',
-  description: 'Manage and publish documents based on versions and revisions'
-}
-
-
-/**
- * Export config structure
- * @param {object} config
- */
-exports.config = (config) => {
-  config.$load({
-    doc: {
-      title: 'Kado Doc'
-    }
-  })
+  description: 'Manage and publish documents based on versions and revisions',
+  languagePacks: [
+    __dirname + '/lang/eng.js',
+    __dirname + '/lang/spa.js',
+  ]
 }
 
 
 /**
  * Initialize database access
- * @param {K} K Master Kado Object
- * @param {K.db} db
- * @param {K.db.sequelize} s Sequelize instance
+ * @param {Kado} app Main application
  */
-exports.db = (K,db,s) => {
+exports.db = (app) => {
+  let s = app.db.sequelize
   let opts = s._relate.cascade()
   let Doc = s.doImport(__dirname + '/models/Doc.js')
   let DocRevision = s.doImport(__dirname + '/models/DocRevision.js')
@@ -52,14 +42,13 @@ exports.db = (K,db,s) => {
 
 /**
  * Provide search
- * @param {K} K Master Kado Object
- * @param {app} app
+ * @param {Kado} app Main application
  * @param {array} keywords
  * @param {number} start
  * @param {number} limit
  * @return {Promise}
  */
-exports.search = (K,app,keywords,start,limit) => {
+exports.search = (app,keywords,start,limit) => {
   let s = K.db.sequelize
   let Doc = s.models.Doc
   let DocProject = s.models.DocProject
@@ -88,10 +77,9 @@ exports.search = (K,app,keywords,start,limit) => {
 
 /**
  * Register in Admin Interface
- * @param {K} K Master Kado Object
- * @param {object} app
+ * @param {Kado} app Main application
  */
-exports.admin = (K,app) => {
+exports.admin = (app) => {
   let admin = require('./admin/index')
   //register permissions
   //doc permissions
@@ -126,58 +114,57 @@ exports.admin = (K,app) => {
     '/admin/view/version/create.html')
   app.view.add('doc/version/edit',__dirname + '/admin/view/version/edit.html')
   //register navigation
-  app.nav.addGroup(app.uri.p('/doc'),'Doc','file-alt')
-  app.nav.addItem('Doc',app.uri.p('/doc/list'),'List','list')
-  app.nav.addItem('Doc',app.uri.p('/doc/create'),'Create','plus')
-  app.nav.addItem('Doc',app.uri.p('/doc/project/list'),
+  app.nav.addGroup('/doc','Doc','file-alt')
+  app.nav.addItem('Doc','/doc/list','List','list')
+  app.nav.addItem('Doc','/doc/create','Create','plus')
+  app.nav.addItem('Doc','/doc/project/list',
     'List Projects','umbrella')
   //register routes
   //main doc routes
-  app.get(app.uri.p('/doc'),(req,res) => {
-    res.redirect(301,app.uri.p('/doc/list'))
+  app.get('/doc',(req,res) => {
+    res.redirect(301,'/doc/list')
   })
-  app.get(app.uri.p('/doc/list'),admin.list)
-  app.get(app.uri.p('/doc/create'),admin.create)
-  app.get(app.uri.p('/doc/edit'),admin.edit)
-  app.post(app.uri.p('/doc/save'),admin.save)
-  app.post(app.uri.p('/doc/revert'),admin.revert)
-  app.post(app.uri.p('/doc/remove'),admin.remove)
-  app.get(app.uri.p('/doc/remove'),admin.remove)
+  app.get('/doc/list',admin.list)
+  app.get('/doc/create',admin.create)
+  app.get('/doc/edit',admin.edit)
+  app.post('/doc/save',admin.save)
+  app.post('/doc/revert',admin.revert)
+  app.post('/doc/remove',admin.remove)
+  app.get('/doc/remove',admin.remove)
   //project routes
-  app.get(app.uri.p('/doc/project'),(req,res) => {
-    res.redirect(301,app.uri.p('/doc/project/list'))
+  app.get('/doc/project',(req,res) => {
+    res.redirect(301,'/doc/project/list')
   })
-  app.get(app.uri.p('/doc/project/list'),admin.project.list)
-  app.get(app.uri.p('/doc/project/create'),admin.project.create)
-  app.get(app.uri.p('/doc/project/edit'),admin.project.edit)
-  app.post(app.uri.p('/doc/project/save'),admin.project.save)
-  app.post(app.uri.p('/doc/project/remove'),admin.project.remove)
-  app.get(app.uri.p('/doc/project/remove'),admin.project.remove)
+  app.get('/doc/project/list',admin.project.list)
+  app.get('/doc/project/create',admin.project.create)
+  app.get('/doc/project/edit',admin.project.edit)
+  app.post('/doc/project/save',admin.project.save)
+  app.post('/doc/project/remove',admin.project.remove)
+  app.get('/doc/project/remove',admin.project.remove)
   //version routes
-  app.get(app.uri.p('/doc/version/create'),admin.version.create)
-  app.get(app.uri.p('/doc/version/edit'),admin.version.edit)
-  app.post(app.uri.p('/doc/version/save'),admin.version.save)
-  app.post(app.uri.p('/doc/version/remove'),admin.version.remove)
-  app.get(app.uri.p('/doc/version/remove'),admin.version.remove)
+  app.get('/doc/version/create',admin.version.create)
+  app.get('/doc/version/edit',admin.version.edit)
+  app.post('/doc/version/save',admin.version.save)
+  app.post('/doc/version/remove',admin.version.remove)
+  app.get('/doc/version/remove',admin.version.remove)
 }
 
 
 /**
  * Register in Main Interface
- * @param {K} K Master Kado Object
- * @param {object} app
+ * @param {Kado} app Main application
  */
-exports.main = (K,app) => {
+exports.main = (app) => {
   let main = require('./main/index')
   //register routes
-  app.get(app.uri.p('/doc/project'),main.project.index)
-  app.get(app.uri.p('/doc/project/:uri'),main.project.entry)
-  app.get(app.uri.p('/doc'),main.index)
-  app.get(app.uri.p('/doc/:project/:version/:uri'),main.entry)
-  app.get(app.uri.p('/doc/:project/:version'),main.list)
-  app.get(app.uri.p('/doc/:project'),main.versionList)
+  app.get('/doc/project',main.project.index)
+  app.get('/doc/project/:uri',main.project.entry)
+  app.get('/doc',main.index)
+  app.get('/doc/:project/:version/:uri',main.entry)
+  app.get('/doc/:project/:version',main.list)
+  app.get('/doc/:project',main.versionList)
   //register navigation
-  app.nav.addGroup(app.uri.p('/doc'),'Documentation','file-alt')
+  app.nav.addGroup('/doc','Documentation','file-alt')
   //register views
   app.view.add('doc/entry',__dirname + '/main/view/entry.html')
   app.view.add('doc/versionList',__dirname + '/main/view/versionList.html')

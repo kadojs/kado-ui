@@ -8,7 +8,7 @@
  */
 const crypto = require('crypto')
 
-const K = require('../../../index')
+const K = require('kado').getInstance()
 const sequelize = K.db.sequelize
 
 const Doc = sequelize.models.Doc
