@@ -13,19 +13,20 @@ exports._kado = {
   name: 'staff',
   title: 'Staff',
   description: 'Manage Kado Staff',
-  admin: {
-    providesAuthentication: true
-  }
+  languagePacks: [
+    __dirname + '/lang/eng.js',
+    __dirname + '/lang/spa.js',
+  ],
+  providesAuthentication: true
 }
 
 
 /**
  * Initialize database access
- * @param {K} K Master Kado Object
- * @param {K.db} db
- * param {K.db.sequelize} s Sequelize instance
+ * @param {Kado} app Main application
  */
-exports.db = (K,db,s) => {
+exports.db = (app) => {
+  const s = app.db.sequelize
   let opts = s._relate.cascade()
   let Staff = s.doImport(__dirname + '/model/Staff.js')
   let StaffPermission = s.doImport(__dirname + '/model/StaffPermission.js')
@@ -38,17 +39,16 @@ exports.db = (K,db,s) => {
 
 /**
  * Provide search
- * @param {K} K Master Kado Object
- * @param {object} app
+ * @param {Kado} app Main application
  * @param {array} keywords
  * @param {number} start
  * @param {number} limit
  * @return {Promise}
  */
-exports.search = (K,app,keywords,start,limit) => {
+exports.search = (app,keywords,start,limit) => {
   //restrict searching staff from main
   if('main' === app._interfaceName) return K.bluebird.try(() => {})
-  let s = K.db.sequelize
+  let s = app.db.sequelize
   let Staff = s.models.Staff
   let where = {[s.Op.or]: []}
   keywords.forEach((w) => {
@@ -67,14 +67,14 @@ exports.search = (K,app,keywords,start,limit) => {
 
 /**
  * Authenticate requests
- * @param {K} K Master Kado Object
+ * @param {Kado} app Main application
  * @param {string} username
  * @param {string} password
  * @param {function} done
  */
-exports.authenticate = (K,username,password,done) => {
-  let admin = require('./admin')
+exports.authenticate = (app,username,password,done) => {
   let userLogin = (email,password) => {
+    let admin = require('./admin')
     return admin.doLogin(email,password)
   }
   userLogin(username,password)
@@ -89,10 +89,9 @@ exports.authenticate = (K,username,password,done) => {
 
 /**
  * Register in Admin Interface
- * @param {K} K Master Kado Object
- * @param {object} app
+ * @param {Kado} app Main application
  */
-exports.admin = (K,app) => {
+exports.admin = (app) => {
   let admin = require('./admin')
   //register permissions
   app.permission.add('/staff/create','Create staff member')
@@ -107,33 +106,35 @@ exports.admin = (K,app) => {
   app.view.add('staff/edit',__dirname + '/admin/view/edit.html')
   app.view.add('staff/list',__dirname + '/admin/view/list.html')
   //staff routes
-  app.uri.p('/login')
-  app.uri.p('/logout')
-  app.get(app.uri.p('/staff'),(req,res) => {
-    res.redirect(301,app.uri.p('/staff/list'))
+  app.router.p('/login')
+  app.router.p('/logout')
+  app.get('/staff',(req,res) => {
+    res.redirect(301,'/staff/list')
   })
-  app.post(app.uri.p('/staff/save'),admin.save)
-  app.get(app.uri.p('/staff/list'),admin.list)
-  app.get(app.uri.p('/staff/create'),admin.create)
-  app.get(app.uri.p('/staff/edit'),admin.edit)
-  app.get(app.uri.p('/staff/grant'),admin.grant)
-  app.get(app.uri.p('/staff/revoke'),admin.revoke)
-  app.post(app.uri.p('/staff/remove'),admin.remove)
-  app.get(app.uri.p('/staff/remove'),admin.remove)
+  app.post('/staff/save',admin.save)
+  app.get('/staff/list',admin.list)
+  app.get('/staff/create',admin.create)
+  app.get('/staff/edit',admin.edit)
+  app.get('/staff/grant',admin.grant)
+  app.get('/staff/revoke',admin.revoke)
+  app.post('/staff/remove',admin.remove)
+  app.get('/staff/remove',admin.remove)
 }
 
 
 /**
  * CLI Access
+ * @param {Kado} app Main application
  */
-exports.cli = () => {
-  require('./cli/staff')
+exports.cli = (app) => {
+  require('./cli/staff')(app)
 }
 
 
 /**
  * Test Access
+ * @param {Kado} app Main application
  */
-exports.test = () => {
-  return require('./test/' + exports._kado.name + '.test.js')
+exports.test = (app) => {
+  return require('./test/' + exports._kado.name + '.test.js')(app)
 }

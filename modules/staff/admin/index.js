@@ -6,9 +6,9 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
+const K = require('kado').getInstance()
 const bcrypt = require('bcrypt')
 const P = require('bluebird')
-const K = require('../../../helpers/kado')
 
 let sequelize = K.db.sequelize
 let Staff = sequelize.models.Staff
@@ -25,12 +25,11 @@ P.promisifyAll(bcrypt)
  */
 exports.list = (req,res) => {
   if(!req.query.length){
-    res.locals._asset.addScriptOnce('/dist/dataTables.js')
-    res.locals._asset.addScriptOnce('/js/dataTableList.js','defer')
+    require(K.helper('datatableList'))(res)
     res.render('staff/list',{
       _pageTitle: K._l.staff.staff + ' ' + K._l.list})
   } else {
-    K.datatable(Staff,req.query)
+    require('sequelize-datatable')(Staff,req.query)
       .then((result) => {
         res.json(result)
       })

@@ -6,7 +6,7 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
-const K = require('../../../index')
+const K = require('kado').getInstance()
 const sequelize = K.db.sequelize
 
 const ContentNav = sequelize.models.ContentNav

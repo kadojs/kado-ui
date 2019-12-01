@@ -6,7 +6,8 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
-const K = require('../../../index')
+const K = require('kado').getInstance()
+const fs = require('fs')
 const sequelize = K.db.sequelize
 
 const Content = sequelize.models.Content
@@ -17,8 +18,8 @@ const Content = sequelize.models.Content
  * @param {object} res
  */
 exports.entry = (req,res) => {
-  res.locals._asset.addScriptOnce('/dist/tuiViewer.js')
-  res.locals._asset.addScriptOnce('/js/loadTuiViewer.js','defer')
+  res.locals._asset.addOnce('/dist/tuiViewer.js','text/javascript')
+  res.locals._asset.addOnce('/js/loadTuiViewer.js','text/javascript')
   let uri = req.params.contentUri
   let q = res.Q
   q.where = {uri: uri, active: true}
@@ -29,7 +30,7 @@ exports.entry = (req,res) => {
         let contentList = K.config.module.content.content
         if(contentList[uri]){
           let content = contentList[uri]
-          if(!K.fs.existsSync(content.templateFile)){
+          if(!fs.existsSync(content.templateFile)){
             throw new Error('Local content template not found: ' +
               content.templateFile)
           }

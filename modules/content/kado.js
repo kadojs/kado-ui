@@ -12,30 +12,20 @@ exports._kado = {
   enabled: true,
   name: 'content',
   title: 'Content',
-  description: 'Manage and publish content'
-}
-
-
-/**
- * Export config structure
- * @param {object} config
- */
-exports.config = (config) => {
-  config.$load({
-    content: {
-      title: 'Content'
-    }
-  })
+  description: 'Manage and publish content',
+  languagePacks: [
+    __dirname + '/lang/eng.js',
+    __dirname + '/lang/spa.js',
+  ]
 }
 
 
 /**
  * Initialize database access
- * @param {K} K Master Kado Object
- * @param {K.db} db
- * @param {K.db.sequelize} s Sequelize instance
+ * @param {Kado} app Main application
  */
-exports.db = (K,db,s) => {
+exports.db = (app) => {
+  const s = app.db.sequelize
   let Content = s.doImport(__dirname + '/models/Content.js')
   let ContentRevision = s.doImport(__dirname + '/models/ContentRevision.js')
   s.doImport(__dirname + '/models/ContentNav.js')
@@ -46,15 +36,14 @@ exports.db = (K,db,s) => {
 
 /**
  * Provide search
- * @param {K} K Master Kado Object
- * @param {object} app
+ * @param {Kado} app Main application
  * @param {array} keywords
  * @param {number} start
  * @param {number} limit
  * @return {Promise}
  */
-exports.search = (K,app,keywords,start,limit) => {
-  let s = K.db.sequelize
+exports.search = (app,keywords,start,limit) => {
+  let s = app.db.sequelize
   let Content = s.models.Content
   let where = {[s.Op.or]: []}
   keywords.forEach((w) => {
@@ -84,10 +73,9 @@ exports.search = (K,app,keywords,start,limit) => {
 
 /**
  * Register in Admin Interface
- * @param {K} K Master Kado Object
- * @param {object} app
+ * @param {Kado} app Main application
  */
-exports.admin = (K,app) => {
+exports.admin = (app) => {
   let admin = require('./admin')
   //register permissions
   app.permission.add('/content/create','Create Content')
@@ -110,44 +98,42 @@ exports.admin = (K,app) => {
   app.view.add('content/nav/edit',__dirname + '/admin/view/nav/edit.html')
   app.view.add('content/nav/list',__dirname + '/admin/view/nav/list.html')
   //register navigation
-  app.nav.addGroup(app.uri.p('/content'),'Content','file-alt')
-  app.nav.addItem('Content',app.uri.p('/content/list'),'List','list')
-  app.nav.addItem('Content',app.uri.p('/content/create'),'Create','plus')
-  app.nav.addItem('Content',app.uri.p('/content/nav/list'),
-    'Manage Nav','clipboard-list')
+  app.nav.addGroup('/content','Content','file-alt')
+  app.nav.addItem('Content','/content/list','List','list')
+  app.nav.addItem('Content','/content/create','Create','plus')
+  app.nav.addItem('Content','/content/nav/list','Manage Nav','clipboard-list')
   //register routes
-  app.get(app.uri.p('/content'),(req,res) => {
+  app.get('/content',(req,res) => {
     res.redirect(301,app.uri.p('/content/list'))
   })
-  app.get(app.uri.p('/content/list'),admin.list)
-  app.get(app.uri.p('/content/create'),admin.create)
-  app.get(app.uri.p('/content/edit'),admin.edit)
-  app.post(app.uri.p('/content/save'),admin.save)
-  app.post(app.uri.p('/content/revert'),admin.revert)
-  app.post(app.uri.p('/content/remove'),admin.remove)
-  app.get(app.uri.p('/content/remove'),admin.remove)
+  app.get('/content/list',admin.list)
+  app.get('/content/create',admin.create)
+  app.get('/content/edit',admin.edit)
+  app.post('/content/save',admin.save)
+  app.post('/content/revert',admin.revert)
+  app.post('/content/remove',admin.remove)
+  app.get('/content/remove',admin.remove)
   //nav routes
-  app.get(app.uri.p('/content/nav',(req,res) => {
+  app.get('/content/nav',(req,res) => {
     res.redirect(301,app.uri.get('/content/nav/list'))
-  }))
-  app.get(app.uri.p('/content/nav/list'),admin.nav.list)
-  app.get(app.uri.p('/content/nav/create'),admin.nav.create)
-  app.get(app.uri.p('/content/nav/edit'),admin.nav.edit)
-  app.post(app.uri.p('/content/nav/save'),admin.nav.save)
-  app.post(app.uri.p('/content/nav/remove'),admin.nav.remove)
-  app.get(app.uri.p('/content/nav/remove'),admin.nav.remove)
+  })
+  app.get('/content/nav/list',admin.nav.list)
+  app.get('/content/nav/create',admin.nav.create)
+  app.get('/content/nav/edit',admin.nav.edit)
+  app.post('/content/nav/save',admin.nav.save)
+  app.post('/content/nav/remove',admin.nav.remove)
+  app.get('/content/nav/remove',admin.nav.remove)
 }
 
 
 /**
  * Register in Main Interface
- * @param {K} K Master Kado Object
- * @param {object} app
+ * @param {Kado} app Main application
  */
-exports.main = (K,app) => {
+exports.main = (app) => {
   let main = require('./main')
   //register routes
-  app.get(app.uri.p('/content') + '/:contentUri',main.entry)
+  app.get('/content/:contentUri',main.entry)
   //register view
   app.view.add('content/entry',__dirname + '/main/view/entry.html')
 }
@@ -155,15 +141,17 @@ exports.main = (K,app) => {
 
 /**
  * CLI Access
+ * @param {Kado} app Main application
  */
-exports.cli = () => {
-  require('./cli/content')
+exports.cli = (app) => {
+  require('./cli/content')(app)
 }
 
 
 /**
  * Test Access
+ * @param {Kado} app Main application
  */
-exports.test = () => {
-  return require('./test/' + exports._kado.name + '.test.js')
+exports.test = (app) => {
+  return require('./test/' + exports._kado.name + '.test.js')(app)
 }
