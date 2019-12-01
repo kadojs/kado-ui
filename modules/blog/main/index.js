@@ -8,7 +8,7 @@
  */
 const K = require('kado').getInstance()
 const base64 = require('base64-js')
-const tuiViewer = require(K.helper('tuiViewer'))
+const tuiViewer = require(K.lib('tuiViewer'))
 const sequelize = K.db.sequelize
 
 const Blog = sequelize.models.Blog

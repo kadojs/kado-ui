@@ -25,7 +25,7 @@ P.promisifyAll(bcrypt)
  */
 exports.list = (req,res) => {
   if(!req.query.length){
-    require(K.helper('datatableList'))(res)
+    require(K.lib('datatableList'))(res)
     res.render('staff/list',{
       _pageTitle: K._l.staff.staff + ' ' + K._l.list})
   } else {
