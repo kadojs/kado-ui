@@ -6,6 +6,7 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
+const P = require('bluebird')
 const K = require('kado').getInstance()
 const datatable = require('sequelize-datatable')
 const datatableView = require(K.lib('datatableView'))

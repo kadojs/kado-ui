@@ -8,7 +8,6 @@
  */
 const P = require('bluebird')
 const K = require('kado').getInstance()
-const datatable = require('sequelize-datatable')
 const datatableView = require(K.lib('datatableView'))
 const fs = require('fs')
 const ObjectManage = require('object-manage')

@@ -46,8 +46,9 @@ exports.db = (app) => {
  * @return {Promise}
  */
 exports.search = (app,keywords,start,limit) => {
+  const P = require('bluebird')
   //restrict searching staff from main
-  if('main' === app._interfaceName) return K.bluebird.try(() => {})
+  if('main' === app._interfaceName) return P.try(() => {})
   let s = app.db.sequelize
   let Staff = s.models.Staff
   let where = {[s.Op.or]: []}

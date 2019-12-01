@@ -17,7 +17,7 @@
  * @param {function} params - An Object containing test specific
  */
 module.exports = (K,expect,request,exec,params) => {
-  let P = K.bluebird
+  const P = require('bluebird')
   //expand some parameters
   let adminBaseUrl = params.admin.baseUrl
   let adminCookieJar = params.admin.cookieJar
