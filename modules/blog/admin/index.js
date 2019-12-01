@@ -6,11 +6,12 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
+const P = require('bluebird')
 const K = require('kado').getInstance()
 const base64 = require('base64-js')
 const crypto = require('crypto')
 const datatable = require('sequelize-datatable')
-const datatableList = require(K.lib('datatableList'))
+const datatableView = require(K.lib('datatableView'))
 const tuiEditor = require(K.lib('tuiEditor'))
 const sequelize = K.db.sequelize
 const Blog = sequelize.models.Blog
@@ -24,7 +25,7 @@ const BlogRevision = sequelize.models.BlogRevision
  */
 exports.list = (req,res) => {
   if(!req.query.length){
-    datatableList(res)
+    datatableView(res)
     res.render('blog/list',{_pageTitle: K._l.blog.blog + ' ' + K._l.list})
   } else {
     datatable(Blog,req.query,res.Q)
@@ -157,7 +158,10 @@ exports.remove = (req,res) => {
   let json = K.isClientJSON(req)
   if(req.query.id) req.body.remove = req.query.id.split(',')
   if(!(req.body.remove instanceof Array)) req.body.remove = [req.body.remove]
-  K.modelRemoveById(Blog,req.body.remove)
+  P.try(()=>{return req.body.remove})
+    .each((id)=>{
+      return id > 0 ? Blog.remove(id) : null
+    })
     .then(() => {
       if(json){
         res.json({success: K._l.blog.blog_removed})

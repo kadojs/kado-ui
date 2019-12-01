@@ -8,6 +8,8 @@
  */
 const K = require('kado').getInstance()
 const fs = require('fs')
+const base64 = require('base64-js')
+const tuiViewer = require(K.lib('tuiViewer'))
 const sequelize = K.db.sequelize
 
 const Content = sequelize.models.Content
@@ -18,8 +20,7 @@ const Content = sequelize.models.Content
  * @param {object} res
  */
 exports.entry = (req,res) => {
-  res.locals._asset.addOnce('/dist/tuiViewer.js','text/javascript')
-  res.locals._asset.addOnce('/js/loadTuiViewer.js','text/javascript')
+  tuiViewer(res)
   let uri = req.params.contentUri
   let q = res.Q
   q.where = {uri: uri, active: true}
@@ -44,7 +45,7 @@ exports.entry = (req,res) => {
         }
       } else {
         result.contentRaw = result.content
-        result.content = K.b64.fromByteArray(Buffer.from(result.content,'utf-8'))
+        result.content = base64.fromByteArray(Buffer.from(result.content,'utf-8'))
         res.render('content/entry',{
           content: result,
           _pageTitle: result.title

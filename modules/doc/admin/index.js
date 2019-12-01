@@ -7,10 +7,12 @@
  * This file is part of Kado and bound to the MIT license distributed within.
  */
 const crypto = require('crypto')
-
 const K = require('kado').getInstance()
+const base64 = require('base64-js')
+const datatable = require('sequelize-datatable')
+const datatableView = require(K.lib('datatableView'))
+const tuiEditor = require(K.lib('tuiEditor'))
 const sequelize = K.db.sequelize
-
 const Doc = sequelize.models.Doc
 const DocRevision = sequelize.models.DocRevision
 const DocProject = sequelize.models.DocProject
@@ -36,12 +38,11 @@ exports.version = require('./version')
  */
 exports.list = (req,res) => {
   if(!req.query.length){
-    res.locals._asset.addScriptOnce('/dist/dataTables.js')
-    res.locals._asset.addScriptOnce('/js/dataTableList.js','defer')
+    datatableView(res)
     res.render('doc/list',{
       _pageTitle: K._l.doc.doc + ' ' + K._l.list})
   } else {
-    K.datatable(Doc,req.query,{
+    datatable(Doc,req.query,{
       include: [{model: DocProjectVersion, include: [DocProject]}]
     })
       .then((result) => {
@@ -78,14 +79,13 @@ exports.create = (req,res) => {
  * @param {object} res
  */
 exports.edit = (req,res) => {
-  res.locals._asset.addScriptOnce('/dist/tuiEditor.js')
-  res.locals._asset.addScriptOnce('/js/loadTuiEditor.js')
+  tuiEditor(res)
   let q = res.Q
   q.include = [{model: DocRevision}]
   Doc.findByPk(req.query.id,q)
     .then((result) => {
       if(!result) throw new Error(K._l.doc.entry_not_found)
-      result.content = K.b64.fromByteArray(Buffer.from(result.content,'utf-8'))
+      result.content = base64.fromByteArray(Buffer.from(result.content,'utf-8'))
       res.render('doc/edit',{
         item: result,
         _pageTitle: K._l.edit + ' ' + K._l.doc.doc + ' ' + result.title
@@ -186,7 +186,10 @@ exports.remove = (req,res) => {
   let json = K.isClientJSON(req)
   if(req.query.id) req.body.remove = req.query.id.split(',')
   if(!(req.body.remove instanceof Array)) req.body.remove = [req.body.remove]
-  K.modelRemoveById(Doc,req.body.remove)
+  P.try(()=>{return req.body.remove})
+    .each((id)=>{
+      return id > 0 ? Doc.remove(id) : null
+    })
     .then(() => {
       if(json){
         res.json({success: K._l.doc.removed})

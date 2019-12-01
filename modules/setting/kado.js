@@ -12,16 +12,19 @@ exports._kado ={
   enabled: true,
   name: 'setting',
   title: 'Settings',
-  description: 'Manage Kado settings directly to the config'
+  description: 'Manage Kado settings directly to the config',
+  languagePacks: [
+    __dirname + '/lang/eng.js',
+    __dirname + '/lang/spa.js',
+  ]
 }
 
 
 /**
  * Register in Admin Interface
- * @param {K} K Master Kado Object
- * @param {object} app
+ * @param {Kado} app
  */
-exports.admin = (K,app) => {
+exports.admin = (app) => {
   let admin = require('./admin')
   //register permissions
   app.permission.add('/setting/list','List settings')

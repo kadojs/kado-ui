@@ -7,7 +7,11 @@
  * This file is part of Kado and bound to the MIT license distributed within.
  */
 const K = require('kado').getInstance()
+const base64 = require('base64-js')
 const crypto = require('crypto')
+const datatable = require('sequelize-datatable')
+const datatableView = require(K.lib('datatableView'))
+const tuiEditor = require(K.lib('tuiEditor'))
 const sequelize = K.db.sequelize
 
 const Content = sequelize.models.Content
@@ -27,12 +31,11 @@ exports.nav = require('./nav')
  */
 exports.list = (req,res) => {
   if(!req.query.length){
-    res.locals._asset.addScriptOnce('/dist/dataTables.js')
-    res.locals._asset.addScriptOnce('/js/dataTableList.js','defer')
+    datatableView(res)
     res.render('content/list',{
       _pageTitle: K._l.content.content + ' ' + K._l.list})
   } else {
-    K.datatable(Content,req.query)
+    datatable(Content,req.query)
       .then((result) => {
         res.json(result)
       })
@@ -60,14 +63,13 @@ exports.create = (req,res) => {
  * @param {object} res
  */
 exports.edit = (req,res) => {
-  res.locals._asset.addScriptOnce('/dist/tuiEditor.js')
-  res.locals._asset.addScriptOnce('/js/loadTuiEditor.js','defer')
+  tuiEditor(res)
   let q = res.Q
   q.include = [{model: ContentRevision}]
   Content.findByPk(req.query.id,q)
     .then((result) => {
       if(!result) throw new Error(K._l.content_entry_not_found)
-      result.content = K.b64.fromByteArray(Buffer.from(result.content,'utf-8'))
+      result.content = base64.fromByteArray(Buffer.from(result.content,'utf-8'))
       res.render('content/edit',{
         content: result,
         _pageTitle: K._l.edit + ' ' + K._l.content.content + ' ' + result.title
@@ -165,7 +167,10 @@ exports.remove = (req,res) => {
   let json = K.isClientJSON(req)
   if(req.query.id) req.body.remove = req.query.id.split(',')
   if(!(req.body.remove instanceof Array)) req.body.remove = [req.body.remove]
-  K.modelRemoveById(Content,req.body.remove)
+  P.try(()=>{return req.body.remove})
+    .each((id)=>{
+      return id > 0 ? Content.remove(id) : null
+    })
     .then(() => {
       if(json){
         res.json({success: K._l.content.content_removed})

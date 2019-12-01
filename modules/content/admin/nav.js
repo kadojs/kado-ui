@@ -7,8 +7,9 @@
  * This file is part of Kado and bound to the MIT license distributed within.
  */
 const K = require('kado').getInstance()
+const datatable = require('sequelize-datatable')
+const datatableView = require(K.lib('datatableView'))
 const sequelize = K.db.sequelize
-
 const ContentNav = sequelize.models.ContentNav
 
 
@@ -19,11 +20,10 @@ const ContentNav = sequelize.models.ContentNav
  */
 exports.list = (req,res) => {
   if(!req.query.length){
-    res.locals._asset.addScriptOnce('/dist/dataTables.js')
-    res.locals._asset.addScriptOnce('/js/dataTableList.js','defer')
+    datatableView(res)
     res.render('content/nav/list')
   } else {
-    K.datatable(ContentNav,req.query)
+    datatable(ContentNav,req.query)
       .then((result) => {
         res.json(result)
       })
@@ -109,7 +109,10 @@ exports.remove = (req,res) => {
   let json = K.isClientJSON(req)
   if(req.query.id) req.body.remove = req.query.id.split(',')
   if(!(req.body.remove instanceof Array)) req.body.remove = [req.body.remove]
-  K.modelRemoveById(ContentNav,req.body.remove)
+  P.try(()=>{return req.body.remove})
+    .each((id)=>{
+      return id > 0 ? ContentNav.remove(id) : null
+    })
     .then(() => {
       if(json){
         res.json({success: K._l.content.removed_nav})

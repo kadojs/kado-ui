@@ -6,10 +6,11 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
+const P = require('bluebird')
 const K = require('kado').getInstance()
 const bcrypt = require('bcrypt')
-const P = require('bluebird')
-
+const datatable = require('sequelize-datatable')
+const datatableView = require(K.lib('datatableView'))
 let sequelize = K.db.sequelize
 let Staff = sequelize.models.Staff
 let StaffPermission = sequelize.models.StaffPermission
@@ -25,11 +26,11 @@ P.promisifyAll(bcrypt)
  */
 exports.list = (req,res) => {
   if(!req.query.length){
-    require(K.lib('datatableList'))(res)
+    datatableView(res)
     res.render('staff/list',{
       _pageTitle: K._l.staff.staff + ' ' + K._l.list})
   } else {
-    require('sequelize-datatable')(Staff,req.query)
+    datatable(Staff,req.query)
       .then((result) => {
         res.json(result)
       })
@@ -344,7 +345,10 @@ exports.remove = (req,res) => {
   let json = K.isClientJSON(req)
   if(req.query.id) req.body.remove = req.query.id.split(',')
   if(!(req.body.remove instanceof Array)) req.body.remove = [req.body.remove]
-  K.modelRemoveById(Staff,req.body.remove)
+  P.try(()=>{return req.body.remove})
+    .each((id)=>{
+      return id > 0 ? Staff.remove(id) : null
+    })
     .then(() => {
       if(json){
         res.json({success: K._l.staff.staff_removed})

@@ -7,6 +7,8 @@
  * This file is part of Kado and bound to the MIT license distributed within.
  */
 const K = require('kado').getInstance()
+const base64 = require('base64-js')
+const tuiViewer = require(K.lib('tuiViewer'))
 const sequelize = K.db.sequelize
 
 const Doc = sequelize.models.Doc
@@ -91,8 +93,7 @@ exports.list = (req,res) => {
  * @param {object} res
  */
 exports.entry = (req,res) => {
-  res.locals._asset.addScriptOnce('/dist/tuiViewer.js')
-  res.locals._asset.addScriptOnce('/js/loadTuiViewer.js')
+  tuiViewer(res)
   let docList
   let q = res.Q
   q.include = [
@@ -120,7 +121,7 @@ exports.entry = (req,res) => {
     .then((result) => {
       if(!result) throw new Error('Document not found')
       result.contentRaw = result.content
-      result.content = K.base64js.fromByteArray(
+      result.content = base64.fromByteArray(
         Buffer.from(result.content,'utf-8'))
       res.render('doc/entry',{
         doc: result,

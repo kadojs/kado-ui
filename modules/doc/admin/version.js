@@ -8,7 +8,6 @@
  */
 const K = require('kado').getInstance()
 const sequelize = K.db.sequelize
-
 const DocProject = sequelize.models.DocProject
 const DocProjectVersion = sequelize.models.DocProjectVersion
 
@@ -115,7 +114,10 @@ exports.remove = (req,res) => {
   if(req.query.project) req.body.project = req.query.project
   if(req.query.DocProjectId) req.body.project = req.query.DocProjectId
   if(!(req.body.remove instanceof Array)) req.body.remove = [req.body.remove]
-  K.modelRemoveById(DocProjectVersion,req.body.remove)
+  P.try(()=>{return req.body.remove})
+    .each((id)=>{
+      return id > 0 ? DocProjectVersion.remove(id) : null
+    })
     .then(() => {
       if(json){
         res.json({success: K._l.doc.removed_version})
