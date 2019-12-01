@@ -117,7 +117,7 @@ exports.remove = (req,res) => {
   if(!(req.body.remove instanceof Array)) req.body.remove = [req.body.remove]
   P.try(()=>{return req.body.remove})
     .each((id)=>{
-      return id > 0 ? DocProjectVersion.remove(id) : null
+      return id > 0 ? DocProjectVersion.destroy(id) : null
     })
     .then(() => {
       if(json){
