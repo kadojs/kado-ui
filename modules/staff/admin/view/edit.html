@@ -38,7 +38,7 @@
       </div>
       <div class="form-group">
         <label for="staffActive">{{_l.active}}</label>
-        <input id="staffActive" type="checkbox" name="staffActive" {{#_is}}{{staff.active}},checked="checked",{{/_is}} />
+        <input id="staffActive" type="checkbox" name="staffActive" {{#_util.is}}{{staff.active}},checked="checked",{{/_util.is}} />
       </div>
       <div class="form-group">
         <button class="btn btn-success" type="submit">{{_l.save}}</button>
@@ -60,7 +60,7 @@
           <td>{{name}}</td>
           <td>{{description}}</td>
           <td>
-            {{#_is}}{{allowed}},<span class="fa fa-check"></span>,{{/_is}}
+            {{#_util.is}}{{allowed}},<span class="fa fa-check"></span>,{{/_util.is}}
           </td>
           <td>
             <a class="btn btn-sm btn-success" href="{{{_baseUrl}}}{{{_uri._staff_grant}}}?id={{staff.id}}&name={{name}}">Grant</a>

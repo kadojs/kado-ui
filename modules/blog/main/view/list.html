@@ -5,7 +5,7 @@
     <div class="blog-post">
       <h3 class="blog-post-title">{{title}}</h3>
       <p class="blog-post-meta">{{#_printDate}}{{datePosted}}{{/_printDate}}</p>
-      <p>{{#_escapeAndTruncate}}200,{{{html}}}{{/_escapeAndTruncate}}</p>
+      <p>{{#_util.escapeAndTruncate}}200,{{{html}}}{{/_util.escapeAndTruncate}}</p>
       <a href="{{{_baseUrl}}}{{{_uri._blog}}}/{{{uri}}}">Read more...</a>
     </div><!-- /.blog-post -->
     {{/blogList}}

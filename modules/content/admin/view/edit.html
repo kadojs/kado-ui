@@ -19,7 +19,7 @@
         </div>
         <div class="form-group">
           <label for="active">{{_l.content.active}}</label>
-          <input type="checkbox" id="active" name="active" {{#_is}}{{content.active}},checked="checked",{{/_is}} />
+          <input type="checkbox" id="active" name="active" {{#_util.is}}{{content.active}},checked="checked",{{/_util.is}} />
         </div>
         <div class="form-group">
           <button class="btn btn-success" type="submit">{{_l.save}}</button>
