@@ -61,6 +61,8 @@ exports.list = (req,res) => {
  * @param {object} res
  */
 exports.create = (req,res) => {
+  res.locals._asset.addScriptOnce('/js/util.js','defer')
+  res.locals._asset.addScriptOnce('/doc/static/create.js','defer')
   let q = res.Q
   q.include = [DocProject]
   DocProjectVersion.findAll(q)
