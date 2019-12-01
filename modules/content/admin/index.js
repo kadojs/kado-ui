@@ -66,6 +66,7 @@ exports.create = (req,res) => {
  */
 exports.edit = (req,res) => {
   tuiEditor(res)
+  res.locals._asset.addScriptOnce('/content/static/edit.js','defer')
   res.locals._asset.addScriptOnce('/content/static/revertContent.js','defer')
   let q = res.Q
   q.include = [{model: ContentRevision}]
