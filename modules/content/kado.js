@@ -123,6 +123,8 @@ exports.admin = (app) => {
   app.post('/content/nav/save',admin.nav.save)
   app.post('/content/nav/remove',admin.nav.remove)
   app.get('/content/nav/remove',admin.nav.remove)
+  //static routes
+  app.use('/content/static',app.static(__dirname + '/admin/public'))
 }
 
 
