@@ -6,11 +6,11 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
-const K = require('../../../index')
-const P = K.bluebird
+const P = require('bluebird')
+const K = require('kado').getInstance()
+const fs = require('fs')
+const ObjectManage = require('object-manage')
 const config = K.config
-const fs = require('graceful-fs')
-const ObjectManage = K.ObjectManage
 let definitions = {}
 
 if(fs.existsSync(__dirname + '/definitions.json'))
