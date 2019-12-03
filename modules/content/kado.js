@@ -104,7 +104,7 @@ exports.admin = (app) => {
   app.nav.addItem('Content','/content/nav/list','Manage Nav','clipboard-list')
   //register routes
   app.get('/content',(req,res) => {
-    res.redirect(301,app.uri.p('/content/list'))
+    res.redirect(301,'/content/list')
   })
   app.get('/content/list',admin.list)
   app.get('/content/create',admin.create)
