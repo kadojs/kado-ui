@@ -11,7 +11,7 @@ const Table = require('cli-table')
 const program = require('commander')
 module.exports = (K)=>{
   let log = K.log
-  let sequelize = K.db.sequelize.instance
+  let sequelize = K.db.sequelize
   let Blog = sequelize.models.Blog
   let config = K.config
   //create

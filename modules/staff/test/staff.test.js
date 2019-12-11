@@ -111,7 +111,7 @@ exports.admin = (K,params) => {
     it('should allow modification',() => {
       return request.postAsync({
         url: params.makeUrl('/staff/save'),
-        jar: parsm.cookieJar,
+        jar: params.cookieJar,
         json: {
           id: staffId,
           staffName: 'Test Staff 2',
