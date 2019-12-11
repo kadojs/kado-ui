@@ -53,15 +53,12 @@ exports.cli = () => {
  */
 exports.admin = (K,params) => {
   //expand some parameters
-  let adminBaseUrl = params.admin.baseUrl
-  let adminCookieJar = params.admin.cookieJar
-  let doLogin = params.admin.doLogin
   describe('blog admin',() => {
     let blogId = null
     let removeBlog = () => {
       return request.postAsync({
-        url: adminBaseUrl + '/blog/remove?id=' + blogId,
-        jar: adminCookieJar,
+        url: params.makeUrl('/blog/remove?id=' + blogId),
+        jar: params.cookieJar,
         json: true
       })
         .then((res) => {
@@ -70,15 +67,15 @@ exports.admin = (K,params) => {
         })
     }
     before(() => {
-      if(!adminCookieJar._isLoggedIn) return doLogin()
+      if(!params.cookieJar._isLoggedIn) return params.doLogin()
     })
     after(() => {
       if(blogId) removeBlog()
     })
     it('should have public static content',()=>{
       return request.getAsync({
-        url: adminBaseUrl + '/ping',
-        jar: adminCookieJar
+        url: params.makeUrl('/ping'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/pong/)
@@ -86,8 +83,8 @@ exports.admin = (K,params) => {
     })
     it('should list',() => {
       return request.getAsync({
-        url: adminBaseUrl + '/blog/list',
-        jar: adminCookieJar
+        url: params.makeUrl('/blog/list'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/Blog/)
@@ -95,8 +92,8 @@ exports.admin = (K,params) => {
     })
     it('should show creation page',() => {
       return request.getAsync({
-        url: adminBaseUrl + '/blog/create',
-        jar: adminCookieJar
+        url: params.makeUrl('/blog/create'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/Create Entry/)
@@ -104,8 +101,8 @@ exports.admin = (K,params) => {
     })
     it('should allow creation',() => {
       return request.postAsync({
-        url: adminBaseUrl + '/blog/save',
-        jar: adminCookieJar,
+        url: params.makeUrl('/blog/save'),
+        jar: params.cookieJar,
         json: {
           title: 'Test Blog',
           uri: 'kado-test-blog',
@@ -120,8 +117,8 @@ exports.admin = (K,params) => {
     })
     it('should allow modification',() => {
       return request.postAsync({
-        url: adminBaseUrl + '/blog/save',
-        jar: adminCookieJar,
+        url: params.makeUrl('/blog/save'),
+        jar: params.cookieJar,
         json: {
           id: blogId,
           title: 'Test blog 2',
@@ -149,8 +146,6 @@ exports.admin = (K,params) => {
  */
 exports.main = (K,params) => {
   //expand some parameters
-  let mainBaseUrl = params.main.baseUrl
-  let mainCookieJar = params.main.cookieJar
   describe('blog main',() => {
     let blogId = null
     before(() => {
@@ -169,8 +164,8 @@ exports.main = (K,params) => {
     })
     it('should have public static content',()=>{
       return request.getAsync({
-        url: mainBaseUrl + '/ping',
-        jar: mainCookieJar
+        url: params.makeUrl('/ping'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/pong/)
@@ -178,8 +173,8 @@ exports.main = (K,params) => {
     })
     it('should allow viewing',() => {
       return request.getAsync({
-        url: mainBaseUrl + '/blog/test',
-        jar: mainCookieJar
+        url: params.makeUrl('/blog/test'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.statusCode).to.equal(200)

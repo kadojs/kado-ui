@@ -52,15 +52,12 @@ exports.cli = () => {
  */
 exports.admin = (K,params) => {
   //expand some parameters
-  let adminBaseUrl = params.admin.baseUrl
-  let adminCookieJar = params.admin.cookieJar
-  let doLogin = params.admin.doLogin
   describe('staff admin',() => {
     let staffId = null
     let removeStaff = () => {
       return request.getAsync({
-        url: adminBaseUrl + '/staff/remove?id=' + staffId,
-        jar: adminCookieJar,
+        url: params.makeUrl('/staff/remove?id=' + staffId),
+        jar: params.cookieJar,
         json: {}
       })
         .then((res) => {
@@ -76,8 +73,8 @@ exports.admin = (K,params) => {
     })
     it('should list',() => {
       return request.getAsync({
-        url: adminBaseUrl + '/staff/list',
-        jar: adminCookieJar
+        url: params.makeUrl('/staff/list'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/Staff/)
@@ -85,8 +82,8 @@ exports.admin = (K,params) => {
     })
     it('should show creation page',() => {
       return request.getAsync({
-        url: adminBaseUrl + '/staff/create',
-        jar: adminCookieJar
+        url: params.makeUrl('/staff/create'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/Create Staff/)
@@ -96,8 +93,8 @@ exports.admin = (K,params) => {
       return exec('node app staff remove -e testing@testing.com')
         .then(() => {
           return request.postAsync({
-            url: adminBaseUrl + '/staff/save',
-            jar: adminCookieJar,
+            url: params.makeUrl('/staff/save'),
+            jar: params.cookieJar,
             json: {
               staffName: 'Test Staff',
               staffEmail: 'testing@testing.com',
@@ -113,8 +110,8 @@ exports.admin = (K,params) => {
     })
     it('should allow modification',() => {
       return request.postAsync({
-        url: adminBaseUrl + '/staff/save',
-        jar: adminCookieJar,
+        url: params.makeUrl('/staff/save'),
+        jar: parsm.cookieJar,
         json: {
           id: staffId,
           staffName: 'Test Staff 2',

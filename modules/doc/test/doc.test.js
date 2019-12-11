@@ -19,28 +19,23 @@ P.promisifyAll(request)
  */
 exports.admin = (K,params) => {
   //expand some parameters
-  let adminBaseUrl = params.admin.baseUrl
-  let adminCookieJar = params.admin.cookieJar
-  let doLogin = params.admin.doLogin
-  //let mainBaseUrl = params.main.baseUrl
-  //let mainCookieJar = params.main.cookieJar
   describe('doc admin',() => {
     let docId = null
     let docProjectId = null
     let docProjectVersionId = null
     let removeDoc = () => {
       return request.postAsync({
-        url: adminBaseUrl + '/doc/remove?id=' + docId,
-        jar: adminCookieJar,
-        json:true
+        url: params.makeUrl('/doc/remove?id=' + docId),
+        jar: params.cookieJar,
+        json: true
       })
         .then((res) => {
           expect(res.body.success).to.match(/Doc\(s\) removed/)
           docId = null
           return request.postAsync({
-            url: adminBaseUrl + '/doc/version/remove?id=' +
-              docProjectVersionId,
-            jar: adminCookieJar,
+            url: params.makeUrl(
+              '/doc/version/remove?id=' + docProjectVersionId),
+            jar: params.cookieJar,
             json: true
           })
         })
@@ -48,9 +43,8 @@ exports.admin = (K,params) => {
           expect(res.body.success).to.match(/Doc Project Version removed/)
           docProjectVersionId = null
           return request.postAsync({
-            url: adminBaseUrl + '/doc/project/remove?id=' +
-              docProjectId,
-            jar: adminCookieJar,
+            url: params.makeUrl('/doc/project/remove?id=' + docProjectId),
+            jar: params.cookieJar,
             json: true
           })
         })
@@ -61,12 +55,12 @@ exports.admin = (K,params) => {
     }
     before(() => {
       return P.try(() => {
-        if(!adminCookieJar) return doLogin()
+        if(!params.cookieJar) return params.doLogin()
       })
         .then(() => {
           return request.postAsync({
-            url: adminBaseUrl + '/doc/project/save',
-            jar: adminCookieJar,
+            url: params.makeUrl('/doc/project/save'),
+            jar: params.cookieJar,
             json: {
               name: 'Kado',
               uri: 'kado'
@@ -77,8 +71,8 @@ exports.admin = (K,params) => {
           expect(+res.body.item.id).to.be.a('number')
           docProjectId = +res.body.item.id
           return request.postAsync({
-            url: adminBaseUrl + '/doc/version/save',
-            jar: adminCookieJar,
+            url: params.makeUrl('/doc/version/save'),
+            jar: params.cookieJar,
             json: {
               name: '3.x',
               DocProjectId: docProjectId
@@ -95,8 +89,8 @@ exports.admin = (K,params) => {
     })
     it('should list',() => {
       return request.getAsync({
-        url: adminBaseUrl + '/doc/list',
-        jar: adminCookieJar
+        url: params.makeUrl('/doc/list'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/Doc/)
@@ -104,8 +98,8 @@ exports.admin = (K,params) => {
     })
     it('should show creation page',() => {
       return request.getAsync({
-        url: adminBaseUrl + '/doc/create',
-        jar: adminCookieJar
+        url: params.makeUrl('/doc/create'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/DocProjectVersionId/)
@@ -113,8 +107,8 @@ exports.admin = (K,params) => {
     })
     it('should allow creation',() => {
       return request.postAsync({
-        url: adminBaseUrl + '/doc/save',
-        jar: adminCookieJar,
+        url: params.makeUrl('/doc/save'),
+        jar: params.cookieJar,
         json: {
           title: 'Test Doc',
           uri: 'test-doc',
@@ -130,8 +124,8 @@ exports.admin = (K,params) => {
     })
     it('should allow modification',() => {
       return request.postAsync({
-        url: adminBaseUrl + '/doc/save',
-        jar: adminCookieJar,
+        url: params.makeUrl('/doc/save'),
+        jar: params.cookieJar,
         json: {
           id: docId,
           title: 'Test Doc 2',

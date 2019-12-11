@@ -52,15 +52,12 @@ exports.cli = () => {
  */
 exports.admin = (K,params) => {
   //expand some parameters
-  let adminBaseUrl = params.admin.baseUrl
-  let adminCookieJar = params.admin.cookieJar
-  let doLogin = params.admin.doLogin
   describe('content admin',() => {
     let contentId = null
     let removeContent = () => {
       return request.postAsync({
-        url: adminBaseUrl + '/content/remove?id=' + contentId,
-        jar: adminCookieJar,
+        url: params.makeUrl('/content/remove?id=' + contentId),
+        jar: params.cookieJar,
         json:true
       })
         .then((res) => {
@@ -69,15 +66,15 @@ exports.admin = (K,params) => {
         })
     }
     before(() => {
-      if(!adminCookieJar._isLoggedIn) return doLogin()
+      if(!params.cookieJar._isLoggedIn) return doLogin()
     })
     after(() => {
       if(contentId) removeContent()
     })
     it('should list',() => {
       return request.getAsync({
-        url: adminBaseUrl + '/content/list',
-        jar: adminCookieJar
+        url: params.makeUrl('/content/list'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/Content/)
@@ -85,8 +82,8 @@ exports.admin = (K,params) => {
     })
     it('should show creation page',() => {
       return request.getAsync({
-        url: adminBaseUrl + '/content/create',
-        jar: adminCookieJar
+        url: params.makeUrl('/content/create'),
+        jar: params.cookieJar
       })
         .then((res) => {
           expect(res.body).to.match(/Create Entry/)
@@ -94,8 +91,8 @@ exports.admin = (K,params) => {
     })
     it('should allow creation',() => {
       return request.postAsync({
-        url: adminBaseUrl + '/content/save',
-        jar: adminCookieJar,
+        url: params.makeUrl('/content/save'),
+        jar: params.cookieJar,
         json: {
           title: 'Test Content',
           uri: 'test-content',
@@ -110,8 +107,8 @@ exports.admin = (K,params) => {
     })
     it('should allow modification',() => {
       return request.postAsync({
-        url: adminBaseUrl + '/content/save',
-        jar: adminCookieJar,
+        url: params.makeUrl('/content/save'),
+        jar: params.cookieJar,
         json: {
           id: contentId,
           title: 'Test content 2',
