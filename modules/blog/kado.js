@@ -133,8 +133,7 @@ exports.cli = (app) => {
 
 /**
  * Test Access
- * @param {Kado} app Main application
  */
-exports.test = (app) => {
-  return require('./test/' + exports._kado.name + '.test.js')(app)
+exports.test = () => {
+  return require('./test/' + exports._kado.name + '.test.js')
 }

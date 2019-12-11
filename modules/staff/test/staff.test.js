@@ -6,16 +6,17 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
+const P = require('bluebird')
+const { expect } = require('chai')
+const exec = P.promisify(require('child_process').exec)
+const request = require('request')
+P.promisifyAll(request)
 
 
 /**
  * CLI tests
- * @param {object} K - The Kado object
- * @param {object} expect - Chai expect object
- * @param {object} request - HTTP request object
- * @param {function} exec - Child process execution function returns a Promise
  */
-exports.cli = (K,expect,request,exec) => {
+exports.cli = () => {
   describe('staff cli',() => {
     it('should allow staff sanitizing from cli',() => {
       return exec('node app staff remove -e test@test.com')
@@ -47,12 +48,9 @@ exports.cli = (K,expect,request,exec) => {
 /**
  * Define tests
  * @param {object} K - The Kado object
- * @param {object} expect - Chai expect object
- * @param {object} request - HTTP request object
- * @param {function} exec - Child process execution function returns a Promise
  * @param {function} params - An Object containing test specific
  */
-exports.admin = (K,expect,request,exec,params) => {
+exports.admin = (K,params) => {
   //expand some parameters
   let adminBaseUrl = params.admin.baseUrl
   let adminCookieJar = params.admin.cookieJar

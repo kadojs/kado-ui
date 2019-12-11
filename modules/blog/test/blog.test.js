@@ -6,16 +6,17 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
+const P = require('bluebird')
+const { expect } = require('chai')
+const exec = P.promisify(require('child_process').exec)
+const request = require('request')
+P.promisifyAll(request)
 
 
 /**
  * CLI tests
- * @param {object} K - The Kado object
- * @param {object} expect - Chai expect object
- * @param {object} request - HTTP request object
- * @param {function} exec - Child process execution function returns a Promise
  */
-exports.cli = (K,expect,request,exec) => {
+exports.cli = () => {
   describe('blog cli',() => {
     let blogId = null
     after(() => {
@@ -48,12 +49,9 @@ exports.cli = (K,expect,request,exec) => {
 /**
  * Admin tests
  * @param {object} K - The Kado object
- * @param {object} expect - Chai expect object
- * @param {object} request - HTTP request object
- * @param {function} exec - Child process execution function returns a Promise
  * @param {function} params - An Object containing test specific
  */
-exports.admin = (K,expect,request,exec,params) => {
+exports.admin = (K,params) => {
   //expand some parameters
   let adminBaseUrl = params.admin.baseUrl
   let adminCookieJar = params.admin.cookieJar
@@ -147,12 +145,9 @@ exports.admin = (K,expect,request,exec,params) => {
 /**
  * Main tests
  * @param {object} K - The Kado object
- * @param {object} expect - Chai expect object
- * @param {object} request - HTTP request object
- * @param {function} exec - Child process execution function returns a Promise
  * @param {function} params - An Object containing test specific
  */
-exports.main = (K,expect,request,exec,params) => {
+exports.main = (K,params) => {
   //expand some parameters
   let mainBaseUrl = params.main.baseUrl
   let mainCookieJar = params.main.cookieJar

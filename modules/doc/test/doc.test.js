@@ -6,18 +6,18 @@
  *
  * This file is part of Kado and bound to the MIT license distributed within.
  */
+const P = require('bluebird')
+const { expect } = require('chai')
+const request = require('request')
+P.promisifyAll(request)
 
 
 /**
- * Define tests
+ * Define admin tests
  * @param {object} K - The Kado object
- * @param {object} expect - Chai expect object
- * @param {object} request - HTTP request object
- * @param {function} exec - Child process execution function returns a Promise
  * @param {function} params - An Object containing test specific
  */
-module.exports = (K,expect,request,exec,params) => {
-  const P = require('bluebird')
+exports.admin = (K,params) => {
   //expand some parameters
   let adminBaseUrl = params.admin.baseUrl
   let adminCookieJar = params.admin.cookieJar
