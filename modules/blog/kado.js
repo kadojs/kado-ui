@@ -73,7 +73,9 @@ exports.search = (app,keywords,start,limit) => {
  * @param {Kado} app Main application
  */
 exports.admin = (app) => {
-  let admin = require('./admin')
+  const Blog = app.lib('Blog').getInstance()
+  const datatableView = app.lib('datatableView')
+  const tuiEditor = app.lib('tuiEditor')
   //register permissions
   app.permission.add('/blog/create','Create blog')
   app.permission.add('/blog/save','Save blog')
@@ -93,13 +95,92 @@ exports.admin = (app) => {
   app.get('/blog',(req,res) => {
     res.redirect(301,'/blog/list')
   })
-  app.get('/blog/list',admin.list)
-  app.get('/blog/create',admin.create)
-  app.get('/blog/edit',admin.edit)
-  app.post('/blog/save',admin.save)
-  app.post('/blog/revert',admin.revert)
-  app.post('/blog/remove',admin.remove)
-  app.get('/blog/remove',admin.remove)
+  app.get('/blog/list',(req,res)=> {
+    if(!req.query.length){
+      datatableView(res)
+      res.render('blog/list',{_pageTitle: K._l.blog.blog + ' ' + K._l.list})
+    } else {
+      Blog.datatable(req,res).then((result) => { res.json(result) })
+        .catch((err) => { res.json({error: err.message}) })
+    }
+  })
+  app.get('/blog/create',(req,res)=>{
+    app.asset.addScriptOnce('/js/util.js')
+    app.asset.addScriptOnce('/js/mirrorToUri.js')
+    res.render('blog/create',{_pageTitle: K._l.blog.blog + ' ' + K._l.create})
+  })
+  app.get('/blog/edit',(req,res)=> {
+    tuiEditor(res)
+    app.asset.addScriptOnce('/js/loadTuiEditor.js')
+    Blog.get(query.query.id,res.Q)
+      .then((result) => {
+        if(!result) throw new Error(K._l.blog_entry_not_found)
+        result.content = base64.fromByteArray(
+          Buffer.from(result.content,'utf-8')
+        )
+        res.render('blog/edit',{
+          blog: result, _pageTitle: K._l.edit + ' ' + K._l.blog.blog})
+      })
+      .catch((err) => { res.render('error',{error: err}) })
+  })
+  app.post('/blog/save',(req,res)=>{
+    Blog.save(req.body)
+      .then((blog) => {
+        if(json){
+          res.json({blog: blog.dataValues})
+        } else {
+          req.flash('success',{
+            message: K._l.blog.blog_entry + ' ' +
+              (isNew ? K._l.created : K._l.saved),
+            href: '/blog/edit?id=' + blog.id,
+            name: blog.id
+          })
+          res.redirect('/blog/list')
+        }
+      })
+      .catch((err) => {
+        if(res.isJSON){
+          res.json({error: err.message})
+        } else {
+          res.render('error',{error: err})
+        }
+      })
+  })
+  app.post('/blog/revert',(req,res)=>{
+    Blog.revert(req.body)
+      .then(() => {
+        res.json({
+          status: 'ok',
+          message: 'Blog Reverted',
+        })
+      })
+      .catch((err) => {
+        res.status(500)
+        res.json({
+          status: 'error',
+          message: err.message
+        })
+      })
+  })
+  app.route('/blog/remove',(req,res)=>{
+    if(req.query.id) req.body.remove = req.query.id.split(',')
+    Blog.remove(req.body.remove)
+      .then(() => {
+        if(json){
+          res.json({success: K._l.blog.blog_removed})
+        } else {
+          req.flash('success',K._l.blog.blog_removed)
+          res.redirect('/blog/list')
+        }
+      })
+      .catch((err) => {
+        if(res.isJSON){
+          res.json({error: err.message || K._l.blog.blog_removal_error})
+        } else {
+          res.render('error',{error: err.message})
+        }
+      })
+  })
   //static routes for the module
   app.use('/blog/static',app.static(__dirname + '/admin/public'))
 }
@@ -110,15 +191,53 @@ exports.admin = (app) => {
  * @param {Kado} app Main application
  */
 exports.main = (app) => {
-  let main = require('./main')
-  //register routes
-  app.get('/blog',main.index)
-  app.get('/blog/:blogUri',main.entry)
+  const tuiViewer = app.lib('tuiViewer')
   //register views
   app.view.add('blog/entry',__dirname + '/main/view/entry.html')
   app.view.add('blog/list',__dirname + '/main/view/list.html')
   //register navigation
   app.nav.addGroup('/blog','Blog','file-alt')
+  //register routes
+  app.get('/blog',(req,res)=>{
+    Blog.list({where: {active: true, order: [['datePosted','DESC']]}},res.Q)
+      .then((results) => {
+        res.render('blog/list',{
+          blogList: results,
+          _pageTitle: K._l.blog.blog + ' ' + K._l.list
+        })
+      })
+      .catch((err) => {
+        res.render(res.locals._view.get('error'),{error: err})
+      })
+  })
+  app.get('/blog/:blogUri',(req,res)=>{
+    tuiViewer(res)
+    app.asset.addScriptOnce('/js/loadTuiViewer.js')
+    Blog.getByUri(req.params.blogUri,res.Q)
+      .then((result) => {
+        if(!result) throw new Error('Blog not found')
+        result.contentRaw = result.content
+        result.content = base64.fromByteArray(
+          Buffer.from(result.content,'utf-8')
+        )
+        if(res.isJSON){
+          res.json({blog: result})
+        } else {
+          res.render('blog/entry',{
+            blog: result,
+            _pageTitle: result.title
+          })
+        }
+      })
+      .catch((err) => {
+        if('Blog not found' === err.message) res.status(404)
+        if(res.isJSON){
+          res.json({error: err.message})
+        } else {
+          res.render('error',{error: err})
+        }
+      })
+  })
 }
 
 
@@ -127,7 +246,117 @@ exports.main = (app) => {
  * @param {Kado} app Main application
  */
 exports.cli = (app) => {
-  require('./cli/blog')(app)
+  const P = require('bluebird')
+  const Table = require('cli-table')
+  const program = require('commander')
+  let log = app.log
+  let Blog = app.lib('Blog').getInstance()
+  let config = app.config
+  //create
+  program
+    .command('create')
+    .option('-t, --title <s>','Blog Title')
+    .option('-u, --uri <s>','Blog URI')
+    .option('-c, --content <s>','Blog Content')
+    .description('Create new blog entry')
+    .action((opts) => {
+      P.try(() => {
+        log.log('info','Creating blog entry')
+        if(!opts.title || !opts.content)
+          throw new Error('Title and content are required')
+        let doc = {
+          title: opts.title,
+          uri: opts.title.replace(/[\s]+/g,'-').toLowerCase(),
+          content: opts.content,
+          html: opts.content,
+          active: true
+        }
+        return Blog.save(doc)
+      })
+        .then((result) => {
+          log.log('info','Blog entry created: ' + result.id)
+          process.exit()
+        })
+        .catch((err) => {
+          log.log('error', 'Error: Failed to create blog entry: ' + err)
+          process.exit()
+        })
+    })
+  //update
+  program
+    .command('update')
+    .option('-i, --id <s>','Blog Id')
+    .option('-t, --title <s>','Blog Title')
+    .option('-u, --uri <s>','Blog URI')
+    .option('-c, --content <s>','Blog Content')
+    .description('Update existing blog entry')
+    .action((opts) => {
+      if(!opts.id) throw new Error('Blog id is required')
+      Blog.save({
+        id: opts.id,
+        title: opts.title,
+        uri: opts.uri,
+        content: opts.content,
+        html: opts.html
+      })
+        .then(() => {
+          log.log('info','Blog entry updated successfully!')
+          process.exit()
+        })
+        .catch((err) => {
+          if(err) throw new Error('Could not save blog entry: ' + err)
+        })
+    })
+  //remove
+  program
+    .command('remove')
+    .option('-i, --id <s>','Blog Id to remove')
+    .description('Remove blog entry')
+    .action((opts) => {
+      if(!opts.id) throw new Error('Blog Id is required... exiting')
+      Blog.remove(opts.id)
+        .then(() => {
+          log.log('info','Blog entry removed successfully!')
+          process.exit()
+        })
+        .catch((err) => {
+          log.log('error', 'Error: Could not remove blog entry: ' + err)
+        })
+    })
+  //list
+  program
+    .command('list')
+    .description('List blog entries')
+    .action(() => {
+      let table = new Table({
+        head: ['Id','Title','Content','Active']
+      })
+      let blogCount = 0
+      Blog.list()
+        .each((row) => {
+          blogCount++
+          table.push([
+            row.id,
+            row.title,
+            row.uri,
+            row.content.replace(/<(?:.|\n)*?>/gm, '').substring(0,50),
+            row.active ? 'Yes' : 'No'
+          ])
+        })
+        .then(() => {
+          if(!blogCount) table.push(['No blog entries'])
+          console.log(table.toString())
+          process.exit()
+        })
+        .catch((err) => {
+          log.log('error', 'Error: Could not list blog entries ' +
+            err.stack)
+          process.exit()
+        })
+    })
+  program.version(config.version)
+  if(process.argv.length - 3 < 0) program.help()
+  else program.parse(process.argv)
 }
 
 
