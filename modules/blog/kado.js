@@ -191,6 +191,7 @@ exports.admin = (app) => {
  * @param {Kado} app Main application
  */
 exports.main = (app) => {
+  const Blog = require(app.lib('Blog')).getInstance()
   const tuiViewer = require(app.lib('tuiViewer'))
   //register views
   app.view.add('blog/entry',__dirname + '/main/view/entry.html')
