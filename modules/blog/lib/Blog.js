@@ -26,6 +26,7 @@ class Blog {
   }
   list(options,q){
     if(!q) q = K.database.queryOptions(K.config)
+    if(!options) options = {}
     if(options.where) q.where = options.where
     if(options.order) q.order = options.order
     return BlogModel.findAll(q)
