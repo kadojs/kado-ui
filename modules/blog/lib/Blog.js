@@ -22,7 +22,7 @@ class Blog {
   }
   getRevision(id,q){
     if(!q) q = K.database.queryOptions(K.config)
-    return BlogRevisionModel.findByPk(id)
+    return BlogRevisionModel.findByPk(id,q)
   }
   list(options,q){
     if(!q) q = K.database.queryOptions(K.config)

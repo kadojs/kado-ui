@@ -74,6 +74,7 @@ exports.search = (app,keywords,start,limit) => {
  */
 exports.admin = (app) => {
   const K = app
+  const base64 = require('base64-js')
   const Blog = require(app.lib('Blog')).getInstance()
   const datatableView = require(app.lib('datatableView'))
   const tuiEditor = require(app.lib('tuiEditor'))
@@ -193,6 +194,7 @@ exports.admin = (app) => {
  */
 exports.main = (app) => {
   const K = app
+  const base64 = require('base64-js')
   const Blog = require(app.lib('Blog')).getInstance()
   const tuiViewer = require(app.lib('tuiViewer'))
   //register views
