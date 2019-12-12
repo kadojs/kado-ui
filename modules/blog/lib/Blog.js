@@ -10,21 +10,21 @@ class Blog {
     return datatable(BlogModel,req.query,res.Q)
   }
   get(id,q){
-    if(!q) q = K.database.queryOptions()
+    if(!q) q = K.database.queryOptions(K.config)
     q.include = [{model: BlogRevision}]
     return BlogModel.findByPk(id,q)
   }
   getByUri(uri,q){
-    if(!q) q = K.database.queryOptions()
+    if(!q) q = K.database.queryOptions(K.config)
     q.where = {uri: req.params.blogUri}
     return Blog.findOne(q)
   }
   getRevision(id,q){
-    if(!q) q = K.database.queryOptions()
+    if(!q) q = K.database.queryOptions(K.config)
     return BlogRevisionModel.findByPk(id)
   }
   list(options,q){
-    if(!q) q = K.database.queryOptions()
+    if(!q) q = K.database.queryOptions(K.config)
     if(options.where) q.where = options.where
     if(options.order) q.order = options.order
     return BlogModel.findAll(q)
