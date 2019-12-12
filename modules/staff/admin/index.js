@@ -311,7 +311,6 @@ exports.loginAction = (req,res) => {
     .then((staff) => {
       //otherwise we are valid start the session
       req.session.staff = staff.dataValues
-      console.log(req.body)
       res.redirect(301,req.body.referrer || '/')
     })
     .catch((err) => {
