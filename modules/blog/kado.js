@@ -163,7 +163,7 @@ exports.admin = (app) => {
         })
       })
   })
-  app.route('/blog/remove',(req,res)=>{
+  app.post('/blog/remove',(req,res)=>{
     if(req.query.id) req.body.remove = req.query.id.split(',')
     Blog.remove(req.body.remove)
       .then(() => {
