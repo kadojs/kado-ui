@@ -73,7 +73,7 @@ exports.search = (app,keywords,start,limit) => {
  * @param {Kado} app Main application
  */
 exports.admin = (app) => {
-  const Blog = app.lib('Blog').getInstance()
+  const Blog = require(app.lib('Blog')).getInstance()
   const datatableView = app.lib('datatableView')
   const tuiEditor = app.lib('tuiEditor')
   //register permissions
@@ -250,7 +250,7 @@ exports.cli = (app) => {
   const Table = require('cli-table')
   const program = require('commander')
   let log = app.log
-  let Blog = app.lib('Blog').getInstance()
+  let Blog = require(app.lib('Blog')).getInstance()
   let config = app.config
   //create
   program
