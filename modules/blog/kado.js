@@ -127,7 +127,7 @@ exports.admin = (app) => {
   app.post('/blog/save',(req,res)=>{
     Blog.save(req.body)
       .then((blog) => {
-        if(json){
+        if(res.isJSON){
           res.json({blog: blog.dataValues})
         } else {
           req.flash('success',{
@@ -167,7 +167,7 @@ exports.admin = (app) => {
     if(req.query.id) req.body.remove = req.query.id.split(',')
     Blog.remove(req.body.remove)
       .then(() => {
-        if(json){
+        if(res.isJSON){
           res.json({success: K._l.blog.blog_removed})
         } else {
           req.flash('success',K._l.blog.blog_removed)

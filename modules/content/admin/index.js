@@ -97,7 +97,6 @@ exports.save = (req,res) => {
   let content
   let isNewRevision = false
   let isNew = false
-  let json = K.isClientJSON(req)
   Content.findByPk(data.id)
     .then((result) => {
       content = result
@@ -140,7 +139,7 @@ exports.save = (req,res) => {
       return content.save()
     })
     .then((content) => {
-      if(json){
+      if(res.isJSON){
         res.json({content: content.dataValues})
       } else {
         req.flash('success',{
@@ -153,7 +152,7 @@ exports.save = (req,res) => {
       }
     })
     .catch((err) => {
-      if(json){
+      if(res.isJSON){
         res.json({error: err.message})
       } else {
         console.log(err)
@@ -169,7 +168,6 @@ exports.save = (req,res) => {
  * @param {object} res
  */
 exports.remove = (req,res) => {
-  let json = K.isClientJSON(req)
   if(req.query.id) req.body.remove = req.query.id.split(',')
   if(!(req.body.remove instanceof Array)) req.body.remove = [req.body.remove]
   P.try(()=>{return req.body.remove})
@@ -177,7 +175,7 @@ exports.remove = (req,res) => {
       return id > 0 ? Content.destroy({where: {id: id}}) : null
     })
     .then(() => {
-      if(json){
+      if(res.isJSON){
         res.json({success: K._l.content.content_removed})
       } else {
         req.flash('success',K._l.content.content_removed)
@@ -185,7 +183,7 @@ exports.remove = (req,res) => {
       }
     })
     .catch((err) => {
-      if(json){
+      if(res.isJSON){
         res.json({error: err.message || K._l.content.content_removal_error})
       } else {
         res.render('error',{error: err.message})

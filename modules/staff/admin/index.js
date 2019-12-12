@@ -104,7 +104,6 @@ exports.edit = (req,res) => {
 exports.grant = (req,res) => {
   let id = req.query.id
   let name = req.query.name
-  let json = K.isClientJSON(req)
   Staff.findByPk(id,res.Q)
     .then((result) => {
       if(!result) throw new Error(K._l.staff.err_staff_not_found)
@@ -116,7 +115,7 @@ exports.grant = (req,res) => {
         .catch(K.db.sequelize.UniqueConstraintError,()=>{})
     })
     .then(() => {
-      if(json){
+      if(res.isJSON){
         res.json({success: K._l.staff.permission_granted})
       } else {
         req.flash('success',K._l.staff.permission_granted)
@@ -124,7 +123,7 @@ exports.grant = (req,res) => {
       }
     })
     .catch((err) => {
-      if(json){
+      if(res.isJSON){
         res.json({error: err.message})
       } else {
         req.flash('warning',err.message)
@@ -142,7 +141,6 @@ exports.grant = (req,res) => {
 exports.revoke = (req,res) => {
   let id = req.query.id
   let name = req.query.name
-  let json = K.isClientJSON(req)
   Staff.findByPk(id)
     .then((result) => {
       if(!result) throw new Error(K._l.staff.err_staff_not_found)
@@ -156,7 +154,7 @@ exports.revoke = (req,res) => {
       return result.destroy()
     })
     .then(() => {
-      if(json){
+      if(res.isJSON){
         res.json({success: K._l.staff.premission_revoked})
       } else {
         req.flash('success',K._l.staff.premission_revoked)
@@ -164,7 +162,7 @@ exports.revoke = (req,res) => {
       }
     })
     .catch((err) => {
-      if(json){
+      if(res.isJSON){
         res.json({error: err.message})
       } else {
         req.flash('warning',err.message)
@@ -183,7 +181,6 @@ exports.save = (req,res) => {
   let form = req.body
   let staffId = form.id || false
   let staffEmail = form.staffEmail
-  let json = K.isClientJSON(req)
   P.try(() => {
     if(staffId){
       return Staff.findByPk(staffId)
@@ -225,7 +222,7 @@ exports.save = (req,res) => {
         staffId = updated.dataValues.id
         staffEmail = updated.dataValues.email
       }
-      if(json){
+      if(res.isJSON){
         res.json({staff: updated.dataValues})
       } else {
         if(false !== updated){
@@ -342,7 +339,6 @@ exports.logout = (req,res) => {
  * @param {object} res
  */
 exports.remove = (req,res) => {
-  let json = K.isClientJSON(req)
   if(req.query.id) req.body.remove = req.query.id.split(',')
   if(!(req.body.remove instanceof Array)) req.body.remove = [req.body.remove]
   P.try(()=>{return req.body.remove})
@@ -350,7 +346,7 @@ exports.remove = (req,res) => {
       return id > 0 ? Staff.destroy({where: {id: id}}) : null
     })
     .then(() => {
-      if(json){
+      if(res.isJSON){
         res.json({success: K._l.staff.staff_removed})
       } else {
         req.flash('success',K._l.staff.staff_removed)
@@ -358,7 +354,7 @@ exports.remove = (req,res) => {
       }
     })
     .catch((err) => {
-      if(json){
+      if(res.isJSON){
         res.json({error: err.message || K._l.staff.err_staff_removed})
       } else {
         res.render('error',{error: err.message})

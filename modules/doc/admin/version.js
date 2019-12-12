@@ -61,10 +61,9 @@ exports.edit = (req,res) => {
 exports.save = (req,res) => {
   let data = req.body
   let isNew = false
-  let json = K.isClientJSON(req)
   if(!data.DocProjectId){
     let errParams = {error: 'Missing project'}
-    if(json){
+    if(res.isJSON){
       return res.json(errParams)
     } else {
       return res.render('error',errParams)
@@ -87,7 +86,7 @@ exports.save = (req,res) => {
       })
     })
     .then((result) => {
-      if(json){
+      if(res.isJSON){
         res.json({item: result.dataValues})
       } else {
         req.flash('success',{
@@ -110,7 +109,6 @@ exports.save = (req,res) => {
  * @param {object} res
  */
 exports.remove = (req,res) => {
-  let json = K.isClientJSON(req)
   if(req.query.id) req.body.remove = req.query.id.split(',')
   if(req.query.project) req.body.project = req.query.project
   if(req.query.DocProjectId) req.body.project = req.query.DocProjectId
@@ -120,7 +118,7 @@ exports.remove = (req,res) => {
       return id > 0 ? DocProjectVersion.destroy({where: {id: id}}) : null
     })
     .then(() => {
-      if(json){
+      if(res.isJSON){
         res.json({success: K._l.doc.removed_version})
       } else {
         req.flash('success',K._l.doc.removed_version)
@@ -132,7 +130,7 @@ exports.remove = (req,res) => {
       }
     })
     .catch((err) => {
-      if(json){
+      if(res.isJSON){
         res.json({error: err.message || K._l.doc.removal_error})
       } else {
         res.render(res.locals._view.get('error'),{error: err.message})
