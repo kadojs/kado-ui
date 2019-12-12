@@ -261,7 +261,7 @@ exports.cli = (app) => {
     .description('Create new blog entry')
     .action((opts) => {
       P.try(() => {
-        log.log('info','Creating blog entry')
+        log.info('Creating blog entry')
         if(!opts.title || !opts.content)
           throw new Error('Title and content are required')
         let doc = {
@@ -274,12 +274,12 @@ exports.cli = (app) => {
         return Blog.save(doc)
       })
         .then((result) => {
-          log.log('info','Blog entry created: ' + result.id)
-          process.exit()
+          log.info('Blog entry created: ' + result.id)
+          process.exit(1)
         })
         .catch((err) => {
-          log.log('error', 'Error: Failed to create blog entry: ' + err)
-          process.exit()
+          log.error('Failed to create blog entry: ' + err + err.stack)
+          process.exit(0)
         })
     })
   //update
@@ -300,11 +300,12 @@ exports.cli = (app) => {
         html: opts.html
       })
         .then(() => {
-          log.log('info','Blog entry updated successfully!')
-          process.exit()
+          log.info('Blog entry updated successfully!')
+          process.exit(0)
         })
         .catch((err) => {
-          if(err) throw new Error('Could not save blog entry: ' + err)
+           log.error('Could not save blog entry: ' + err + err.stack)
+          process.exit(1)
         })
     })
   //remove
@@ -316,11 +317,11 @@ exports.cli = (app) => {
       if(!opts.id) throw new Error('Blog Id is required... exiting')
       Blog.remove(opts.id)
         .then(() => {
-          log.log('info','Blog entry removed successfully!')
+          log.info('Blog entry removed successfully!')
           process.exit()
         })
         .catch((err) => {
-          log.log('error', 'Error: Could not remove blog entry: ' + err)
+          log.error('Could not remove blog entry: ' + err + err.stack)
         })
     })
   //list
@@ -346,12 +347,11 @@ exports.cli = (app) => {
         .then(() => {
           if(!blogCount) table.push(['No blog entries'])
           console.log(table.toString())
-          process.exit()
+          process.exit(0)
         })
         .catch((err) => {
-          log.log('error', 'Error: Could not list blog entries ' +
-            err.stack)
-          process.exit()
+          log.error('Could not list blog entries ' + err.stack)
+          process.exit(1)
         })
     })
   program.version(config.version)
