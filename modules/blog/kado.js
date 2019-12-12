@@ -73,6 +73,7 @@ exports.search = (app,keywords,start,limit) => {
  * @param {Kado} app Main application
  */
 exports.admin = (app) => {
+  const K = app
   const Blog = require(app.lib('Blog')).getInstance()
   const datatableView = require(app.lib('datatableView'))
   const tuiEditor = require(app.lib('tuiEditor'))
@@ -191,6 +192,7 @@ exports.admin = (app) => {
  * @param {Kado} app Main application
  */
 exports.main = (app) => {
+  const K = app
   const Blog = require(app.lib('Blog')).getInstance()
   const tuiViewer = require(app.lib('tuiViewer'))
   //register views
