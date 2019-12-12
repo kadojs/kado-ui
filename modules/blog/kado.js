@@ -269,11 +269,11 @@ exports.cli = (app) => {
       })
         .then((result) => {
           log.info('Blog entry created: ' + result.id)
-          process.exit(1)
+          process.exit(0)
         })
         .catch((err) => {
           log.error('Failed to create blog entry: ' + err + err.stack)
-          process.exit(0)
+          process.exit(1)
         })
     })
   //update
