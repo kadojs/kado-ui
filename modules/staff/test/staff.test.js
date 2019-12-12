@@ -66,7 +66,7 @@ exports.admin = (K,params) => {
         })
     }
     before(() => {
-      if(!adminCookieJar._isLoggedIn) return doLogin()
+      if(!params.cookieJar._isLoggedIn) return doLogin()
     })
     after(() => {
       if(staffId) return removeStaff()
