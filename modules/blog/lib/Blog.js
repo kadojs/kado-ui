@@ -1,4 +1,5 @@
 'use strict';
+const crypto = require('crypto')
 const datatable = require('sequelize-datatable')
 const K = require('kado').getInstance()
 const P = require('bluebird')
@@ -16,8 +17,8 @@ class Blog {
   }
   getByUri(uri,q){
     if(!q) q = K.database.queryOptions(K.config)
-    q.where = {uri: req.params.blogUri}
-    return Blog.findOne(q)
+    q.where = {uri: uri}
+    return BlogModel.findOne(q)
   }
   getRevision(id,q){
     if(!q) q = K.database.queryOptions(K.config)
