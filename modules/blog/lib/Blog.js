@@ -11,7 +11,7 @@ class Blog {
   }
   get(id,q){
     if(!q) q = K.database.queryOptions(K.config)
-    q.include = [{model: BlogRevision}]
+    q.include = [{model: BlogRevisionModel}]
     return BlogModel.findByPk(id,q)
   }
   getByUri(uri,q){
