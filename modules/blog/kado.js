@@ -246,7 +246,6 @@ exports.main = (app) => {
  * @param {Kado} app Main application
  */
 exports.cli = (app) => {
-  const P = require('bluebird')
   const Table = require('cli-table')
   const program = require('commander')
   let log = app.log
@@ -260,18 +259,13 @@ exports.cli = (app) => {
     .option('-c, --content <s>','Blog Content')
     .description('Create new blog entry')
     .action((opts) => {
-      P.try(() => {
-        log.info('Creating blog entry')
-        if(!opts.title || !opts.content)
-          throw new Error('Title and content are required')
-        let doc = {
-          title: opts.title,
-          uri: opts.title.replace(/[\s]+/g,'-').toLowerCase(),
-          content: opts.content,
-          html: opts.content,
-          active: true
-        }
-        return Blog.save(doc)
+      log.info('Creating blog entry')
+      Blog.save({
+        title: opts.title,
+        uri: opts.title.replace(/[\s]+/g,'-').toLowerCase(),
+        content: opts.content,
+        html: opts.content,
+        active: true
       })
         .then((result) => {
           log.info('Blog entry created: ' + result.id)

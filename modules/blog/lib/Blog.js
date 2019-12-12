@@ -42,6 +42,8 @@ class Blog {
     let blog
     let isNewRevision = false
     let isNew = false
+    if(!data.title || !data.content)
+      throw new Error('Blog Title and Content are required')
     this.get(data.id)
       .then((result) => {
         blog = result
