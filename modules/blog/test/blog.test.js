@@ -72,15 +72,6 @@ exports.admin = (K,params) => {
     after(() => {
       if(blogId) removeBlog()
     })
-    it('should have public static content',()=>{
-      return request.getAsync({
-        url: params.makeUrl('/ping'),
-        jar: params.cookieJar
-      })
-        .then((res) => {
-          expect(res.body).to.match(/pong/)
-        })
-    })
     it('should list',() => {
       return request.getAsync({
         url: params.makeUrl('/blog/list'),
@@ -160,15 +151,6 @@ exports.main = (K,params) => {
         .then((result) => {
           expect(result).to.match(/Blog entry removed successfully!/i)
           blogId = null
-        })
-    })
-    it('should have public static content',()=>{
-      return request.getAsync({
-        url: params.makeUrl('/ping'),
-        jar: params.cookieJar
-      })
-        .then((res) => {
-          expect(res.body).to.match(/pong/)
         })
     })
     it('should allow viewing',() => {
