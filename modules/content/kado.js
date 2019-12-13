@@ -112,7 +112,7 @@ exports.admin = (app) => {
       datatableView(res)
       res.render(
         'content/list',
-        {_pageTitle: K._l.content.content + ' ' + K._l.list}
+        {_pageTitle: app._l.content.content + ' ' + app._l.list}
       )
     } else {
       Content.datatable(req,res).then((result) => { res.json(result) })
@@ -124,7 +124,7 @@ exports.admin = (app) => {
     app.asset.addScriptOnce('/js/mirrorToUri.js')
     res.render(
       'content/create',
-      {_pageTitle: K._l.blog.blog + ' ' + K._l.create}
+      {_pageTitle: app._l.blog.blog + ' ' + app._l.create}
     )
   })
   app.get('/content/edit',(req,res)=>{
@@ -138,7 +138,7 @@ exports.admin = (app) => {
           Buffer.from(result.content,'utf-8')
         )
         res.render('content/edit',{
-          content: result, _pageTitle: K._l.edit + ' ' + K._l.content.content})
+          content: result, _pageTitle: app._l.edit + ' ' + app._l.content.content})
       })
       .catch((err) => { res.render('error',{error: err}) })
   })
@@ -149,8 +149,8 @@ exports.admin = (app) => {
           res.json({content: content.dataValues})
         } else {
           req.flash('success',{
-            message: K._l.content.content_entry + ' ' +
-              (isNew ? K._l.created : K._l.saved),
+            message: app._l.content.content_entry + ' ' +
+              (isNew ? app._l.created : app._l.saved),
             href: '/content/edit?id=' + content.id,
             name: content.id
           })
@@ -186,15 +186,15 @@ exports.admin = (app) => {
     Content.remove(req.body.remove)
       .then(() => {
         if(res.isJSON){
-          res.json({success: K._l.content.content_removed})
+          res.json({success: app._l.content.content_removed})
         } else {
-          req.flash('success',K._l.content.content_removed)
+          req.flash('success',app._l.content.content_removed)
           res.redirect('/blog/list')
         }
       })
       .catch((err) => {
         if(res.isJSON){
-          res.json({error: err.message || K._l.content.content_removal_error})
+          res.json({error: err.message || app._l.content.content_removal_error})
         } else {
           res.render('error',{error: err.message})
         }
@@ -221,7 +221,7 @@ exports.admin = (app) => {
   app.get('/content/nav/edit',(req,res)=>{
     ContentNav.get(query.query.id,res.Q)
       .then((result) => {
-        if(!result) throw new Error(K._l.content.entry_not_found)
+        if(!result) throw new Error(app._l.content.entry_not_found)
         res.render('content/nav/edit',{item: result})
       })
       .catch((err) => { res.render('error',{error: err}) })
@@ -230,11 +230,11 @@ exports.admin = (app) => {
     ContentNav.save(req.body)
       .then((content) => {
         if(res.isJSON){
-          res.json({item: result.dataValues})
+          res.json({item: content.dataValues})
         } else {
           req.flash('success',{
             message: K._l.content.content_entry + ' ' +
-              (isNew ? K._l.created : K._l.saved),
+              (isNew ? app._l.created : app._l.saved),
             href: '/content/nav/edit?id=' + result.id,
             name: result.id
           })
@@ -254,9 +254,9 @@ exports.admin = (app) => {
     ContentNav.remove(req.body.remove)
       .then(() => {
         if(res.isJSON){
-          res.json({success: K._l.content.content_removed})
+          res.json({success: app._l.content.content_removed})
         } else {
-          req.flash('success',K._l.content.content_removed)
+          req.flash('success',app_l.content.content_removed)
           res.redirect('/blog/list')
         }
       })
@@ -290,7 +290,7 @@ exports.main = (app) => {
       .then((result) => {
         if(!result){
           //try and locate the content locally
-          let contentList = K.config.module.content.content
+          let contentList = app.config.module.content.content
           if(contentList[uri]){
             let content = contentList[uri]
             if(!fs.existsSync(content.templateFile)){
@@ -310,7 +310,9 @@ exports.main = (app) => {
           tuiViewer(res)
           res.locals._asset.addScriptOnce('/js/loadTuiViewer.js')
           result.contentRaw = result.content
-          result.content = base64.fromByteArray(Buffer.from(result.content,'utf-8'))
+          result.content = base64.fromByteArray(
+            Buffer.from(result.content,'utf-8')
+          )
           res.render('content/entry',{
             content: result,
             _pageTitle: result.title

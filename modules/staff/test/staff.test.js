@@ -16,7 +16,7 @@ P.promisifyAll(request)
  * CLI Tests
  * @param {Kado} app
  */
-exports.cli = () => {
+exports.cli = (app) => {
   describe('staff cli',() => {
     it('should allow staff sanitizing from cli',() => {
       return app.cli.run('staff remove -e test@test.com')

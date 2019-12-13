@@ -21,7 +21,6 @@ exports._kado = {
  * @param {object} app
  */
 exports.admin = (app) => {
-  let admin = require('./admin/index')
   //register basic views
   app.view.add('alert',__dirname + '/../../admin/view/alert.html')
   app.view.add('breadcrumb',__dirname + '/../../admin/view/breadcrumb.html')
@@ -34,7 +33,9 @@ exports.admin = (app) => {
   app.view.add('search',__dirname + '/../../admin/view/search.html')
   app.view.add('sidebar',__dirname + '/../../admin/view/sidebar.html')
   //register routes
-  app.get('/',admin.index)
+  app.get('/',(req,res)=>{
+    res.render('home')
+  })
 }
 
 
@@ -43,11 +44,12 @@ exports.admin = (app) => {
  * @param {object} app
  */
 exports.main = (app) => {
-  let main = require('./main/index')
   //register basic views
   app.view.add('error',__dirname + '/../../main/view/error.html')
   app.view.add('home',__dirname + '/../../main/view/home.html')
   app.view.add('login',__dirname + '/../../main/view/login.html')
   //register routes
-  app.get('/',main.index)
+  app.get('/',(req,res)=>{
+    res.render('home')
+  })
 }
