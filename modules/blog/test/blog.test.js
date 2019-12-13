@@ -8,7 +8,6 @@
  */
 const P = require('bluebird')
 const { expect } = require('chai')
-const exec = P.promisify(require('child_process').exec)
 const request = require('request')
 P.promisifyAll(request)
 
@@ -16,27 +15,27 @@ P.promisifyAll(request)
 /**
  * CLI tests
  */
-exports.cli = () => {
-  describe('blog cli',() => {
+exports.cli = (app) => {
+  describe.only('blog cli',() => {
     let blogId = null
     after(() => {
-      if(blogId) return exec('node app blog remove -i ' + blogId)
+      if(blogId) return app.cli.run('blog remove -i ' + blogId)
     })
-    it('should allow blog creation from cli',() => {
-      return exec('node app blog create -t test -c test')
+    it('should allow blog creation',() => {
+      return app.cli.run('blog create -t test -c test')
         .then((result) => {
           expect(result).to.match(/Blog entry created: \d+/)
           blogId = result.match(/Blog entry created: (\d+)/)[1]
         })
     })
     it('should allow blog change from cli',() => {
-      return exec('node app blog update -i ' + blogId + ' -t test2 -c test')
+      return app.cli.run('blog update -i ' + blogId + ' -t test2 -c test')
         .then((result) => {
           expect(result).to.match(/Blog entry updated successfully!/i)
         })
     })
     it('should allow blog deletion from cli',() => {
-      return exec('node app blog remove -i ' + blogId)
+      return app.cli.run('blog remove -i ' + blogId)
         .then((result) => {
           expect(result).to.match(/Blog entry removed successfully!/i)
           blogId = null

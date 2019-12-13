@@ -114,6 +114,7 @@ exports.admin = (app) => {
   app.get('/blog/edit',(req,res)=> {
     tuiEditor(res)
     app.asset.addScriptOnce('/js/loadTuiEditor.js')
+    app.asset.addScriptOnce('/blog/static/blogEdit.js')
     Blog.get(query.query.id,res.Q)
       .then((result) => {
         if(!result) throw new Error(K._l.blog_entry_not_found)
@@ -252,8 +253,7 @@ exports.main = (app) => {
  */
 exports.cli = (app) => {
   const Blog = require(app.lib('Blog')).getInstance()
-  const cli = app.CommandLine.getInstance(app)
-  cli.command('create',{
+  app.cli.command('blog','create',{
     description: 'Create new blog entry',
     options: [
       {definition: '-t, --title <s>', description: 'Blog Title'},
@@ -267,14 +267,10 @@ exports.cli = (app) => {
         content: opts.content,
         html: opts.content,
         active: true
-      })
-        .then((result) => {
-          app.log.info('Blog entry created: ' + result.id)
-          return result
-        })
+      }).then((result) => { return 'Blog entry created: ' + result.id })
     }
   })
-  cli.command('update',{
+  app.cli.command('blog','update',{
     description: 'Update blog entry',
     options: [
       {definition: '-i, --id <s>', description: 'Blog ID'},
@@ -291,13 +287,10 @@ exports.cli = (app) => {
         content: opts.content,
         html: opts.html
       })
-        .then((result) => {
-          app.log.info('Blog entry updated successfully!')
-          return result
-        })
+        .then(() => { return 'Blog entry updated successfully!' })
     }
   })
-  cli.command('remove',{
+  app.cli.command('blog','remove',{
     description: 'Remove blog entry',
     options: [
       {definition: '-i, --id <s>', description: 'Blog ID'},
@@ -305,17 +298,14 @@ exports.cli = (app) => {
     action: (app,opts)=>{
       if(!opts.id) throw new Error('Blog id is required')
       return Blog.remove(opts.id)
-        .then((result) => {
-          app.log.info('Blog entry removed successfully!')
-          return result
-        })
+        .then(() => { return 'Blog entry removed successfully!' })
     }
   })
-  cli.command('list',{
+  app.cli.command('blog','list',{
     description: 'List Blog Entries',
-    action: (app)=>{
+    action: ()=>{
       const Table = require('cli-table')
-      let table = new Table({head: ['Id','Title','Active']})
+      let table = new Table({head: ['Id','Title','URI','Active']})
       let blogCount = 0
       return Blog.list().each((row) => {
         blogCount++
@@ -328,12 +318,10 @@ exports.cli = (app) => {
       })
         .then(() => {
           if(!blogCount) table.push(['No blog entries'])
-          console.log(table.toString())
-          return table
+          return table.toString()
         })
     }
   })
-  cli.execute(process.argv)
 }
 
 
