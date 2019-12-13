@@ -251,21 +251,17 @@ exports.main = (app) => {
  * @param {Kado} app Main application
  */
 exports.cli = (app) => {
-  const Table = require('cli-table')
-  const program = require('commander')
-  let log = app.log
-  let Blog = require(app.lib('Blog')).getInstance()
-  let config = app.config
-  //create
-  program
-    .command('create')
-    .option('-t, --title <s>','Blog Title')
-    .option('-u, --uri <s>','Blog URI')
-    .option('-c, --content <s>','Blog Content')
-    .description('Create new blog entry')
-    .action((opts) => {
-      log.info('Creating blog entry')
-      Blog.save({
+  const Blog = require(app.lib('Blog')).getInstance()
+  const cli = app.CommandLine.getInstance(app)
+  cli.command('create',{
+    description: 'Create new blog entry',
+    options: [
+      {definition: '-t, --title <s>', description: 'Blog Title'},
+      {definition: '-u, --uri <s>', description: 'Blog URI'},
+      {definition: '-c, --content <s>', description: 'Blog Content'}
+    ],
+    action: (app,opts)=>{
+      return Blog.save({
         title: opts.title,
         uri: opts.title.replace(/[\s]+/g,'-').toLowerCase(),
         content: opts.content,
@@ -273,89 +269,71 @@ exports.cli = (app) => {
         active: true
       })
         .then((result) => {
-          log.info('Blog entry created: ' + result.id)
-          process.exit(0)
+          app.log.info('Blog entry created: ' + result.id)
+          return result
         })
-        .catch((err) => {
-          log.error('Failed to create blog entry: ' + err + err.stack)
-          process.exit(1)
-        })
-    })
-  //update
-  program
-    .command('update')
-    .option('-i, --id <s>','Blog Id')
-    .option('-t, --title <s>','Blog Title')
-    .option('-u, --uri <s>','Blog URI')
-    .option('-c, --content <s>','Blog Content')
-    .description('Update existing blog entry')
-    .action((opts) => {
+    }
+  })
+  cli.command('update',{
+    description: 'Update blog entry',
+    options: [
+      {definition: '-i, --id <s>', description: 'Blog ID'},
+      {definition: '-t, --title <s>', description: 'Blog Title'},
+      {definition: '-u, --uri <s>', description: 'Blog URI'},
+      {definition: '-c, --content <s>', description: 'Blog Content'}
+    ],
+    action: (app,opts)=>{
       if(!opts.id) throw new Error('Blog id is required')
-      Blog.save({
+      return Blog.save({
         id: opts.id,
         title: opts.title,
         uri: opts.uri,
         content: opts.content,
         html: opts.html
       })
-        .then(() => {
-          log.info('Blog entry updated successfully!')
-          process.exit(0)
+        .then((result) => {
+          app.log.info('Blog entry updated successfully!')
+          return result
         })
-        .catch((err) => {
-           log.error('Could not save blog entry: ' + err + err.stack)
-          process.exit(1)
+    }
+  })
+  cli.command('remove',{
+    description: 'Remove blog entry',
+    options: [
+      {definition: '-i, --id <s>', description: 'Blog ID'},
+    ],
+    action: (app,opts)=>{
+      if(!opts.id) throw new Error('Blog id is required')
+      return Blog.remove(opts.id)
+        .then((result) => {
+          app.log.info('Blog entry removed successfully!')
+          return result
         })
-    })
-  //remove
-  program
-    .command('remove')
-    .option('-i, --id <s>','Blog Id to remove')
-    .description('Remove blog entry')
-    .action((opts) => {
-      if(!opts.id) throw new Error('Blog Id is required... exiting')
-      Blog.remove(opts.id)
-        .then(() => {
-          log.info('Blog entry removed successfully!')
-          process.exit()
-        })
-        .catch((err) => {
-          log.error('Could not remove blog entry: ' + err + err.stack)
-        })
-    })
-  //list
-  program
-    .command('list')
-    .description('List blog entries')
-    .action(() => {
-      let table = new Table({
-        head: ['Id','Title','Content','Active']
-      })
+    }
+  })
+  cli.command('list',{
+    description: 'List Blog Entries',
+    action: (app)=>{
+      const Table = require('cli-table')
+      let table = new Table({head: ['Id','Title','Active']})
       let blogCount = 0
-      Blog.list()
-        .each((row) => {
-          blogCount++
-          table.push([
-            row.id,
-            row.title,
-            row.uri,
-            row.content.replace(/<(?:.|\n)*?>/gm, '').substring(0,50),
-            row.active ? 'Yes' : 'No'
-          ])
-        })
+      return Blog.list().each((row) => {
+        blogCount++
+        table.push([
+          row.id,
+          row.title,
+          row.uri,
+          row.active ? 'Yes' : 'No'
+        ])
+      })
         .then(() => {
           if(!blogCount) table.push(['No blog entries'])
           console.log(table.toString())
-          process.exit(0)
+          return table
         })
-        .catch((err) => {
-          log.error('Could not list blog entries ' + err.stack)
-          process.exit(1)
-        })
-    })
-  program.version(config.version)
-  if(process.argv.length - 3 < 0) program.help()
-  else program.parse(process.argv)
+    }
+  })
+  cli.execute(process.argv)
 }
 
 
