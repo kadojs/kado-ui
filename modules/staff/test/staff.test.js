@@ -8,36 +8,36 @@
  */
 const P = require('bluebird')
 const { expect } = require('chai')
-const exec = P.promisify(require('child_process').exec)
 const request = require('request')
 P.promisifyAll(request)
 
 
 /**
- * CLI tests
+ * CLI Tests
+ * @param {Kado} app
  */
 exports.cli = () => {
   describe('staff cli',() => {
     it('should allow staff sanitizing from cli',() => {
-      return exec('node app staff remove -e test@test.com')
+      return app.cli.run('staff remove -e test@test.com')
         .then((result) => {
           expect(result).to.match(/Staff member removed successfully!/i)
         })
     })
     it('should allow staff creation from cli',() => {
-      return exec('node app staff create -e test@test.com -p test -n test')
+      return app.cli.run('staff create -e test@test.com -p test -n test')
         .then((result) => {
           expect(result).to.match(/Staff member created!/i)
         })
     })
     it('should allow staff password change from cli',() => {
-      return exec('node app staff update -e test@test.com -p test2 -n test')
+      return app.cli.run('staff update -e test@test.com -p test2 -n test')
         .then((result) => {
           expect(result).to.match(/Staff member updated successfully!/i)
         })
     })
     it('should allow staff deletion from cli',() => {
-      return exec('node app staff remove -e test@test.com')
+      return app.cli.run('staff remove -e test@test.com')
         .then((result) => {
           expect(result).to.match(/Staff member removed successfully!/i)
         })
@@ -45,12 +45,13 @@ exports.cli = () => {
   })
 }
 
+
 /**
- * Define tests
- * @param {object} K - The Kado object
+ * Admin tests
+ * @param {Kado} app
  * @param {function} params - An Object containing test specific
  */
-exports.admin = (K,params) => {
+exports.admin = (app,params) => {
   //expand some parameters
   describe('staff admin',() => {
     let staffId = null
@@ -90,7 +91,7 @@ exports.admin = (K,params) => {
         })
     })
     it('should allow creation',() => {
-      return exec('node app staff remove -e testing@testing.com')
+      return app.cli.run('staff remove -e testing@testing.com')
         .then(() => {
           return request.postAsync({
             url: params.makeUrl('/staff/save'),

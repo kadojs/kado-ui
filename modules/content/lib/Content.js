@@ -10,67 +10,70 @@ const crypto = require('crypto')
 const datatable = require('sequelize-datatable')
 const K = require('kado').getInstance()
 const P = require('bluebird')
-const BlogModel = K.db.sequelize.models.Blog
-const BlogRevisionModel = K.db.sequelize.models.BlogRevision
+const ContentModel = K.db.sequelize.models.Content
+const ContentRevisionModel = K.db.sequelize.models.ContentRevision
 
-class Blog {
+class Content {
   datatable(req,res){
-    return datatable(BlogModel,req.query,res.Q)
+    return datatable(ContentModel,req.query,res.Q)
   }
   get(id,q){
     if(!q) q = K.database.queryOptions(K.config)
-    q.include = [{model: BlogRevisionModel}]
-    return BlogModel.findByPk(id,q)
+    q.include = [{model: ContentRevisionModel}]
+    return ContentModel.findByPk(id,q)
   }
   getByUri(uri,q){
     if(!q) q = K.database.queryOptions(K.config)
     q.where = {uri: uri}
-    return BlogModel.findOne(q)
+    return ContentModel.findOne(q)
   }
   getRevision(id,q){
     if(!q) q = K.database.queryOptions(K.config)
-    return BlogRevisionModel.findByPk(id,q)
+    return ContentRevisionModel.findByPk(id,q)
   }
   list(options,q){
     if(!q) q = K.database.queryOptions(K.config)
     if(!options) options = {}
     if(options.where) q.where = options.where
     if(options.order) q.order = options.order
-    return BlogModel.findAll(q)
+    return ContentModel.findAll(q)
   }
   remove(list){
     if(!(list instanceof Array)) list = [list]
     return P.try(()=>{return list})
       .each((id)=>{
-        return id > 0 ? BlogModel.destroy({where: {id: id}}) : null
+        return id > 0 ? ContentModel.destroy({where: {id: id}}) : null
       })
   }
   save(data){
     let hash
-    let blog
+    let content
     let isNewRevision = false
     let isNew = false
-    if(!data.title) throw new Error('Blog Title is required')
+    if(!data.title && !data.uri){
+      throw new Error('Content Title and URI are required')
+    }
     return this.get(data.id)
       .then((result) => {
-        blog = result
-        if(!blog){
+        content = result
+        if(!content){
           isNew = true
-          blog = BlogModel.build({
+          content = ContentModel.build({
             content: '',
             html: ''
           })
         }
-        if(data.title) blog.title = data.title
-        if(data.uri) blog.uri = data.uri
-        if('undefined' === typeof data.active) blog.active = false
-        if(data.active) blog.active = true
+        if(data.title) content.title = data.title
+        if(data.uri) content.uri = data.uri
+        if('undefined' === typeof data.active) content.active = false
+        if(data.active) content.active = true
         //first hash them
         if(!data.content) data.content = ''
         if(!data.html) data.html = ''
         let cipher = crypto.createHash('sha256')
         hash = cipher.update(data.content + data.html).digest('hex')
-        return BlogRevisionModel.findOne({where: {hash: hash, BlogId: blog.id}})
+        return ContentRevisionModel.findOne({where: {
+          hash: hash, ContentId: content.id}})
       })
       .then((result) => {
         if(!result){
@@ -79,44 +82,44 @@ class Blog {
             content: data.content,
             html: data.html,
             hash: hash,
-            BlogId: blog.id
+            ContentId: content.id
           }
-          return BlogRevisionModel.create(revParams)
+          return ContentRevisionModel.create(revParams)
         } else {
           return result
         }
       })
       .then(() => {
-        blog.content = data.content
-        blog.html = data.html
-        return blog.save()
+        content.content = data.content
+        content.html = data.html
+        return content.save()
       })
   }
   revert(data){
     const that = this
     let revision
-    let blog
+    let content
     this.getRevision(data.revisionId)
       .then((result)=>{
         revision = result
         if(!revision) throw new Error('Revision Not Found')
-        return that.get(data.blogId)
+        return that.get(data.contentId)
       })
       .then((result)=>{
-        blog = result
-        if(!blog) throw new Error('Blog Not Found')
-        return blog
+        content = result
+        if(!content) throw new Error('Content Not Found')
+        return content
       })
       .then(()=> {
-        blog.content = revision.content
-        blog.html = revision.html
-        return blog.save()
+        content.content = revision.content
+        content.html = revision.html
+        return content.save()
       })
   }
 }
 
-Blog.getInstance = ()=>{
-  return new Blog()
+Content.getInstance = ()=>{
+  return new Content()
 }
 
-module.exports = Blog
+module.exports = Content

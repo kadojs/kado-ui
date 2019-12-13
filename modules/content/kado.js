@@ -76,7 +76,8 @@ exports.search = (app,keywords,start,limit) => {
  * @param {Kado} app Main application
  */
 exports.admin = (app) => {
-  let admin = require('./admin')
+  const Content = require(app.lib('Content')).getInstance()
+  const ContentNav = require(app.lib('ContentNav')).getInstance()
   //register permissions
   app.permission.add('/content/create','Create Content')
   app.permission.add('/content/save','Save Content')
@@ -103,26 +104,170 @@ exports.admin = (app) => {
   app.nav.addItem('Content','/content/create','Create','plus')
   app.nav.addItem('Content','/content/nav/list','Manage Nav','clipboard-list')
   //register routes
-  app.get('/content',(req,res) => {
+  app.get('/content',(req,res)=>{
     res.redirect(301,'/content/list')
   })
-  app.get('/content/list',admin.list)
-  app.get('/content/create',admin.create)
-  app.get('/content/edit',admin.edit)
-  app.post('/content/save',admin.save)
-  app.post('/content/revert',admin.revert)
-  app.post('/content/remove',admin.remove)
-  app.get('/content/remove',admin.remove)
+  app.get('/content/list',(req,res)=>{
+    if(!req.query.length){
+      datatableView(res)
+      res.render(
+        'content/list',
+        {_pageTitle: K._l.content.content + ' ' + K._l.list}
+      )
+    } else {
+      Content.datatable(req,res).then((result) => { res.json(result) })
+        .catch((err) => { res.json({error: err.message}) })
+    }
+  })
+  app.get('/content/create',(req,res)=>{
+    app.asset.addScriptOnce('/js/util.js')
+    app.asset.addScriptOnce('/js/mirrorToUri.js')
+    res.render(
+      'content/create',
+      {_pageTitle: K._l.blog.blog + ' ' + K._l.create}
+    )
+  })
+  app.get('/content/edit',(req,res)=>{
+    tuiEditor(res)
+    app.asset.addScriptOnce('/js/loadTuiEditor.js')
+    res.locals._asset.addScriptOnce('/content/static/revertContent.js')
+    Content.get(query.query.id,res.Q)
+      .then((result) => {
+        if(!result) throw new Error(K._l.content.entry_not_found)
+        result.content = base64.fromByteArray(
+          Buffer.from(result.content,'utf-8')
+        )
+        res.render('content/edit',{
+          content: result, _pageTitle: K._l.edit + ' ' + K._l.content.content})
+      })
+      .catch((err) => { res.render('error',{error: err}) })
+  })
+  app.post('/content/save',(req,res)=>{
+    Content.save(req.body)
+      .then((content) => {
+        if(res.isJSON){
+          res.json({content: content.dataValues})
+        } else {
+          req.flash('success',{
+            message: K._l.content.content_entry + ' ' +
+              (isNew ? K._l.created : K._l.saved),
+            href: '/content/edit?id=' + content.id,
+            name: content.id
+          })
+          res.redirect('/content/list')
+        }
+      })
+      .catch((err) => {
+        if(res.isJSON){
+          res.json({error: err.message})
+        } else {
+          res.render('error',{error: err})
+        }
+      })
+  })
+  app.post('/content/revert',(req,res)=>{
+    Content.revert(req.body)
+      .then(() => {
+        res.json({
+          status: 'ok',
+          message: 'Content Reverted',
+        })
+      })
+      .catch((err) => {
+        res.status(500)
+        res.json({
+          status: 'error',
+          message: err.message
+        })
+      })
+  })
+  app.post('/content/remove',(req,res)=>{
+    if(req.query.id) req.body.remove = req.query.id.split(',')
+    Content.remove(req.body.remove)
+      .then(() => {
+        if(res.isJSON){
+          res.json({success: K._l.content.content_removed})
+        } else {
+          req.flash('success',K._l.content.content_removed)
+          res.redirect('/blog/list')
+        }
+      })
+      .catch((err) => {
+        if(res.isJSON){
+          res.json({error: err.message || K._l.content.content_removal_error})
+        } else {
+          res.render('error',{error: err.message})
+        }
+      })
+  })
   //nav routes
-  app.get('/content/nav',(req,res) => {
+  app.get('/content/nav',(req,res)=>{
     res.redirect(301,app.uri.get('/content/nav/list'))
   })
-  app.get('/content/nav/list',admin.nav.list)
-  app.get('/content/nav/create',admin.nav.create)
-  app.get('/content/nav/edit',admin.nav.edit)
-  app.post('/content/nav/save',admin.nav.save)
-  app.post('/content/nav/remove',admin.nav.remove)
-  app.get('/content/nav/remove',admin.nav.remove)
+  app.get('/content/nav/list',(req,res)=>{
+    if(!req.query.length){
+      datatableView(res)
+      res.render('content/nav/list')
+    } else {
+      ContentNav.datatable(req,res).then((result) => { res.json(result) })
+        .catch((err) => { res.json({error: err.message}) })
+    }
+  })
+  app.get('/content/nav/create',(req,res)=>{
+    app.asset.addScriptOnce('/js/util.js')
+    app.asset.addScriptOnce('/js/mirrorToUri.js')
+    res.render('content/nav/create')
+  })
+  app.get('/content/nav/edit',(req,res)=>{
+    ContentNav.get(query.query.id,res.Q)
+      .then((result) => {
+        if(!result) throw new Error(K._l.content.entry_not_found)
+        res.render('content/nav/edit',{item: result})
+      })
+      .catch((err) => { res.render('error',{error: err}) })
+  })
+  app.post('/content/nav/save',(req,res)=>{
+    ContentNav.save(req.body)
+      .then((content) => {
+        if(res.isJSON){
+          res.json({item: result.dataValues})
+        } else {
+          req.flash('success',{
+            message: K._l.content.content_entry + ' ' +
+              (isNew ? K._l.created : K._l.saved),
+            href: '/content/nav/edit?id=' + result.id,
+            name: result.id
+          })
+          res.redirect('/content/nav/list')
+        }
+      })
+      .catch((err) => {
+        if(res.isJSON){
+          res.json({error: err.message})
+        } else {
+          res.render('error',{error: err})
+        }
+      })
+  })
+  app.post('/content/nav/remove',(req,res)=>{
+    if(req.query.id) req.body.remove = req.query.id.split(',')
+    ContentNav.remove(req.body.remove)
+      .then(() => {
+        if(res.isJSON){
+          res.json({success: K._l.content.content_removed})
+        } else {
+          req.flash('success',K._l.content.content_removed)
+          res.redirect('/blog/list')
+        }
+      })
+      .catch((err) => {
+        if(res.isJSON){
+          res.json({error: err.message})
+        } else {
+          res.render('error',{error: err.message})
+        }
+      })
+  })
   //static routes
   app.use('/content/static',app.static(__dirname + '/admin/public'))
 }
@@ -133,10 +278,50 @@ exports.admin = (app) => {
  * @param {Kado} app Main application
  */
 exports.main = (app) => {
-  let main = require('./main')
+  const fs = require('fs')
+  const base64 = require('base64-js')
+  const tuiViewer = require(app.lib('tuiViewer'))
+  const Content = require(app.lib('Content')).getInstance()
   app.get('/content',(req,res)=>{res.redirect(301,'/')})
   //register routes
-  app.get('/content/:contentUri',main.entry)
+  app.get('/content/:contentUri',(req,res)=>{
+    let uri = req.params.contentUri
+    Content.getByUri(uri,res.Q)
+      .then((result) => {
+        if(!result){
+          //try and locate the content locally
+          let contentList = K.config.module.content.content
+          if(contentList[uri]){
+            let content = contentList[uri]
+            if(!fs.existsSync(content.templateFile)){
+              throw new Error('Local content template not found: ' +
+                content.templateFile)
+            }
+            //add the view to the view system
+            res.locals._view.add('content/' + uri,content.templateFile)
+            //now render with this template (so we have partials)
+            content._pageTitle = content.title
+            res.render('content/' + uri,content)
+          } else {
+            throw new Error('Content not found')
+          }
+        } else {
+          //load tui viewer
+          tuiViewer(res)
+          res.locals._asset.addScriptOnce('/js/loadTuiViewer.js')
+          result.contentRaw = result.content
+          result.content = base64.fromByteArray(Buffer.from(result.content,'utf-8'))
+          res.render('content/entry',{
+            content: result,
+            _pageTitle: result.title
+          })
+        }
+      })
+      .catch((err) => {
+        if('Content not found' === err.message) res.status(404)
+        res.render('error',{error: err})
+      })
+  })
   //register view
   app.view.add('content/entry',__dirname + '/main/view/entry.html')
 }
@@ -147,7 +332,76 @@ exports.main = (app) => {
  * @param {Kado} app Main application
  */
 exports.cli = (app) => {
-  require('./cli/content')(app)
+  const Content = require(app.lib('Content')).getInstance()
+  app.cli.command('content','create',{
+    description: 'Create new content entry',
+    options: [
+      {definition: '-t, --title <s>', description: 'Content Title'},
+      {definition: '-u, --uri <s>', description: 'Content URI'},
+      {definition: '-c, --content <s>', description: 'Content Data'}
+    ],
+    action: (app,opts)=>{
+      return Content.save({
+        title: opts.title,
+        uri: opts.title.replace(/[\s]+/g,'-').toLowerCase(),
+        content: opts.content,
+        html: opts.content,
+        active: true
+      }).then((result) => { return 'Blog entry created: ' + result.id })
+    }
+  })
+  app.cli.command('content','update',{
+    description: 'Update content entry',
+    options: [
+      {definition: '-i, --id <s>', description: 'Content ID'},
+      {definition: '-t, --title <s>', description: 'Content Title'},
+      {definition: '-u, --uri <s>', description: 'Content URI'},
+      {definition: '-c, --content <s>', description: 'Content Content'}
+    ],
+    action: (app,opts)=>{
+      if(!opts.id) throw new Error('Content id is required')
+      return Content.save({
+        id: opts.id,
+        title: opts.title,
+        uri: opts.uri,
+        content: opts.content,
+        html: opts.html
+      })
+        .then(() => { return 'Content entry updated successfully!' })
+    }
+  })
+  app.cli.command('content','remove',{
+    description: 'Remove content entry',
+    options: [
+      {definition: '-i, --id <s>', description: 'Content ID'},
+    ],
+    action: (app,opts)=>{
+      if(!opts.id) throw new Error('Content id is required')
+      return Content.remove(opts.id)
+        .then(() => { return 'Content entry removed successfully!' })
+    }
+  })
+  app.cli.command('content','list',{
+    description: 'List Content Entries',
+    action: ()=>{
+      const Table = require('cli-table')
+      let table = new Table({head: ['Id','Title','URI','Active']})
+      let contentCount = 0
+      return Content.list().each((row) => {
+        contentCount++
+        table.push([
+          row.id,
+          row.title,
+          row.uri,
+          row.active ? 'Yes' : 'No'
+        ])
+      })
+        .then(() => {
+          if(!contentCount) table.push(['No content entries'])
+          return table.toString()
+        })
+    }
+  })
 }
 
 

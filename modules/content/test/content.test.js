@@ -8,35 +8,35 @@
  */
 const P = require('bluebird')
 const { expect } = require('chai')
-const exec = P.promisify(require('child_process').exec)
 const request = require('request')
 P.promisifyAll(request)
 
 
 /**
  * CLI tests
+ * @param {Kado} app
  */
-exports.cli = () => {
+exports.cli = (app) => {
   describe('content cli',() => {
     let contentId = null
     after(() => {
-      if(contentId) return exec('node app content remove -i ' + contentId)
+      if(contentId) return app.cli.run('content remove -i ' + contentId)
     })
     it('should allow content creation from cli',() => {
-      return exec('node app content create -t test -c test')
+      return app.cli.run('content create -t test -c test')
         .then((result) => {
           expect(result).to.match(/Content entry created: \d+/)
           contentId = result.match(/Content entry created: (\d+)/)[1]
         })
     })
     it('should allow content change from cli',() => {
-      return exec('node app content update -i ' + contentId + ' -t test2 -c test')
+      return app.cli.run('content update -i ' + contentId + ' -t test2 -c test')
         .then((result) => {
           expect(result).to.match(/Content entry updated successfully!/i)
         })
     })
     it('should allow content deletion from cli',() => {
-      return exec('node app content remove -i ' + contentId)
+      return app.cli.run('content remove -i ' + contentId)
         .then((result) => {
           expect(result).to.match(/Content entry removed successfully!/i)
           contentId = null
@@ -47,10 +47,10 @@ exports.cli = () => {
 
 /**
  * Define tests
- * @param {object} K - The Kado object
+ * @param {Kado} app
  * @param {function} params - An Object containing test specific
  */
-exports.admin = (K,params) => {
+exports.admin = (app,params) => {
   //expand some parameters
   describe('content admin',() => {
     let contentId = null

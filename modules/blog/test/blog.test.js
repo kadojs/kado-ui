@@ -14,9 +14,10 @@ P.promisifyAll(request)
 
 /**
  * CLI tests
+ * @param {Kado} app
  */
 exports.cli = (app) => {
-  describe.only('blog cli',() => {
+  describe('blog cli',() => {
     let blogId = null
     after(() => {
       if(blogId) return app.cli.run('blog remove -i ' + blogId)
@@ -47,10 +48,10 @@ exports.cli = (app) => {
 
 /**
  * Admin tests
- * @param {object} K - The Kado object
+ * @param {object} app - The Kado object
  * @param {function} params - An Object containing test specific
  */
-exports.admin = (K,params) => {
+exports.admin = (app,params) => {
   //expand some parameters
   describe('blog admin',() => {
     let blogId = null
@@ -131,22 +132,22 @@ exports.admin = (K,params) => {
 
 /**
  * Main tests
- * @param {object} K - The Kado object
+ * @param {object} app - The Kado object
  * @param {function} params - An Object containing test specific
  */
-exports.main = (K,params) => {
+exports.main = (app,params) => {
   //expand some parameters
   describe('blog main',() => {
     let blogId = null
     before(() => {
-      return exec('node app blog create -t test -c test')
+      return app.cli.run('blog create -t test -c test')
         .then((result) => {
           expect(result).to.match(/Blog entry created: \d+/)
           blogId = result.match(/Blog entry created: (\d+)/)[1]
         })
     })
     after(() => {
-      return exec('node app blog remove -i ' + blogId)
+      return app.cli.run('blog remove -i ' + blogId)
         .then((result) => {
           expect(result).to.match(/Blog entry removed successfully!/i)
           blogId = null
