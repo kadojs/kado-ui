@@ -81,7 +81,7 @@ exports.search = (app,keywords,start,limit) => {
  */
 exports.admin = (app) => {
   const Doc = require(app.lib('Doc')).getInstance()
-  const tuiEditor = require(K.lib('tuiEditor'))
+  const tuiEditor = require(app.lib('tuiEditor'))
   //register permissions
   //doc permissions
   app.permission.add('/doc/create','Create Doc')
