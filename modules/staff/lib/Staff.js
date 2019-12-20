@@ -76,12 +76,14 @@ class Staff {
   }
   save(data){
     const that = this
+    let isNew = false
     let id = data.id || false
     return P.try(() => {
       if(!opts.email) throw new Error('Email is required')
       if(id){
         return that.get(id)
       } else {
+        isNew = true
         return Staff.build()
       }
     })
@@ -116,6 +118,9 @@ class Staff {
         } else {
           return result.save()
         }
+      })
+      .then((result) => {
+        return {isNew: isNew, result: result}
       })
   }
   authenticate(email,password){

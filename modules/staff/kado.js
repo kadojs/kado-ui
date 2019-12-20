@@ -152,7 +152,25 @@ exports.admin = (app) => {
         res.render('error',{error: err.message})
       })
   })
-  app.post('/staff/save',admin.save)
+  app.post('/staff/save',(req,res)=>{
+    Staff.save(req.body)
+      .then((result) => {
+        if(res.isJSON){
+          res.json({item: result.result.dataValues})
+        } else {
+          req.flash('success',{
+            message: app._l.staff.staff + ' ' +
+              (result.isNew ? app._l.created : app._l.saved),
+            href: app.uri.get('/staff/edit') + '?id=' + result.result.id,
+            name: result.result.id
+          })
+          res.redirect(app.uri.get('/staff/list'))
+        }
+      })
+      .catch((err) => {
+        res.render('error',{error: err})
+      })
+  })
   app.get('/staff/grant',(req,res)=>{
     Staff.grant(req.query)
       .then(()=>{
