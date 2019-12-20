@@ -11,7 +11,7 @@ const datatable = require('sequelize-datatable')
 const K = require('kado').getInstance()
 const P = require('bluebird')
 const StaffModel = K.db.sequelize.models.Staff
-const StaffPermissionModel = sequelize.models.StaffPermission
+const StaffPermissionModel = K.db.sequelize.models.StaffPermission
 
 //make some promises
 P.promisifyAll(bcrypt)
