@@ -74,7 +74,7 @@ module.exports = (sequelize,DataTypes) => {
   {
     indexes: [
       {
-        name: 'email_unique',
+        name: 'email_pk',
         unique: true,
         method: 'BTREE',
         fields: ['email']

@@ -245,13 +245,15 @@ exports.cli = (app) => {
       {definition: '-n, --name <s>', description: 'Name'}
     ],
     action: (app,opts)=>{
-      return Staff.save({
+      const params = {
         email: opts.email,
-        password: bcrypt.hashSync(
-          opts.password,bcrypt.genSaltSync(12)),
+        password: opts.password,
         name: opts.name,
         active: true
-      }).then((result) => { return 'Staff member created: ' + result.id })
+      }
+      return Staff.save(params)
+        .then((result) => { return 'Staff member created: ' + result.id })
+        .catch((err) => { return err.message })
     }
   })
   app.cli.command('staff','update',{
@@ -269,17 +271,18 @@ exports.cli = (app) => {
       {definition: '-n, --name <s>', description: 'Name'}
     ],
     action: (app,opts)=>{
-      const params = {
-        email: opts.email
-      }
-      if(opts.newEmail) params.newEmail = opts.newEmail
-      if(opts.password){
-        params.staffPassword = opts.password
-        params.staffPasswordConfirm = opts.password
-      }
+      const params = { email: opts.email }
+      if(opts.newEmail) params.email = opts.newEmail
+      if(opts.password) params.password = opts.password
       if(opts.name) params.name = opts.name
-      return Staff.save(params)
+      return Staff.getByEmail(opts.email)
+        .then((result)=>{
+          if(!result) throw new Error('Staff member not found')
+          params.id = result.id
+          return Staff.save(params)
+        })
         .then(() => { return 'Staff member updated successfully!' })
+        .catch((err) => { return err.message })
     }
   })
   app.cli.command('staff','remove',{
@@ -291,13 +294,12 @@ exports.cli = (app) => {
       },
     ],
     action: (app,opts)=>{
-      if(!opts.id) throw new Error('Content id is required')
-      return Staff.getByEmail(opts.email)
-        .then((result)=>{
-          if(!result) throw new Error('Could not find staff member to remove')
-          return Staff.remove(result.id)
-        })
+      console.log('RMOVE1')
+      if(!opts.email) throw new Error('Staff email is required')
+      return 'Staff member removed successfully!'
+      return Staff.removeByEmail(opts.email)
         .then(() => { return 'Staff member removed successfully!' })
+        .catch((err) => { return err.message })
     }
   })
   app.cli.command('staff','grant',{
@@ -314,12 +316,13 @@ exports.cli = (app) => {
     ],
     action: (app,opts)=>{
       if(!opts.email || !opts.perm) throw new Error('Email and Perm required')
-      Staff.getByEmail(opts.email)
+      return Staff.getByEmail(opts.email)
         .then((result) => {
           if(!result) throw new Error('Staff member not found')
           return Staff.grant({id: result.id, name: opts.perm})
         })
         .then(()=>{ return 'Staff member permission granted!' })
+        .catch((err) => { return err.message })
     }
   })
   app.cli.command('staff','revoke',{
@@ -336,12 +339,13 @@ exports.cli = (app) => {
     ],
     action: (app,opts)=>{
       if(!opts.email || !opts.perm) throw new Error('Email and Perm required')
-      Staff.getByEmail(opts.email)
+      return Staff.getByEmail(opts.email)
         .then((result) => {
           if(!result) throw new Error('Staff member not found')
           return Staff.revoke({id: result.id, name: opts.perm})
         })
         .then(()=>{ return 'Staff member permission revoked!' })
+        .catch((err) => { return err.message })
     }
   })
   app.cli.command('staff','list',{
@@ -363,6 +367,7 @@ exports.cli = (app) => {
           if(!contentCount) table.push(['No content entries'])
           return table.toString()
         })
+        .catch((err) => { return err.message })
     }
   })
 }

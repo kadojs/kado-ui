@@ -1,5 +1,5 @@
 'use strict';
-const KadoUI = require('./index')
+const ui = require('./index')
 if(require.main === module){
-  KadoUI.app(KadoUI.config(),__dirname + '/main',__dirname + '/admin')
+  ui.app(ui.config(),__dirname + '/main',__dirname + '/admin')
 }

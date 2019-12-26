@@ -1,3 +1,3 @@
 'use strict';
-const KadoUI = require('../index')
-KadoUI.test(KadoUI.config())
+const ui = require('../index')
+ui.test(ui.config())

@@ -17,7 +17,7 @@ P.promisifyAll(request)
  * @param {Kado} app
  */
 exports.cli = (app) => {
-  describe('staff cli',() => {
+  describe.only('staff cli',() => {
     it('should allow staff sanitizing from cli',() => {
       return app.cli.run('staff remove -e test@test.com')
         .then((result) => {
@@ -27,7 +27,7 @@ exports.cli = (app) => {
     it('should allow staff creation from cli',() => {
       return app.cli.run('staff create -e test@test.com -p test -n test')
         .then((result) => {
-          expect(result).to.match(/Staff member created!/i)
+          expect(result).to.match(/Staff member created: \d+/i)
         })
     })
     it('should allow staff password change from cli',() => {
