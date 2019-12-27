@@ -109,17 +109,26 @@ class Doc {
     let hash
     let doc
     let isNewRevision = false
-    return DocModel.findByPk(data.id)
+    return Promise.resolve().then(()=> {
+      if(!data.id){
+        isNew = true
+        return DocModel.build({
+          name: data.name,
+          uri: data.uri,
+          sortNum: data.sortNum,
+          content: data.content,
+          html: data.html,
+          DocProjectVersionId: data.DocProjectVersionId
+        })
+      }
+      else{
+        return DocModel.findByPk(data.id)
+      }
+    })
       .then((result) => {
         if(!result) throw new Error('Document Not Found')
         if(!data.DocProjectVersionId) throw new Error('Missing Project')
         doc = result
-        if(!doc){
-          isNew = true
-          data.html = ''
-          data.content = ''
-          doc = DocModel.build()
-        }
         if(data.title) doc.title = data.title
         if(data.uri) doc.uri = data.uri
         if(data.sortNum) doc.sortNum = data.sortNum
@@ -140,13 +149,12 @@ class Doc {
       .then((result) => {
         if(!result){
           isNewRevision = true
-          let revParams = {
+          return DocRevisionModel.create({
             content: data.content,
             html: data.html,
             hash: hash,
             DocId: doc.id
-          }
-          return DocRevisionModel.create(revParams)
+          })
         } else {
           return result
         }
@@ -156,10 +164,15 @@ class Doc {
         doc.html = data.html
         return doc.save()
       })
+      .then((result)=>{
+        result.isNew = isNew
+        result.isNewRevision = isNewRevision
+        return result
+      })
   }
   saveProject(data){
     let isNew = false
-    this.getProject(data.id)
+    return this.getProject(data.id)
       .then((result) => {
         if(!result){
           isNew = true
@@ -178,7 +191,7 @@ class Doc {
   }
   saveProjectVersion(data){
     let isNew = false
-    this.getProjectVersion(data.id)
+    return this.getProjectVersion(data.id)
       .then((result) => {
         if(!data.DocProjectId) throw new Error('Missing project')
         if(!result){

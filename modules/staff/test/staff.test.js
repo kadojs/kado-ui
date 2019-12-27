@@ -17,7 +17,7 @@ P.promisifyAll(request)
  * @param {Kado} app
  */
 exports.cli = (app) => {
-  describe.only('staff cli',() => {
+  describe('staff cli',() => {
     it('should allow staff sanitizing from cli',() => {
       return app.cli.run('staff remove -e test@test.com')
         .then((result) => {
@@ -56,10 +56,12 @@ exports.admin = (app,params) => {
   describe('staff admin',() => {
     let staffId = null
     let removeStaff = () => {
-      return request.getAsync({
-        url: params.makeUrl('/staff/remove?id=' + staffId),
+      return request.postAsync({
+        url: params.makeUrl('/staff/remove'),
         jar: params.cookieJar,
-        json: {}
+        json: {
+          remove: [staffId]
+        }
       })
         .then((res) => {
           expect(res.body.success).to.match(/Staff removed/)
@@ -97,14 +99,15 @@ exports.admin = (app,params) => {
             url: params.makeUrl('/staff/save'),
             jar: params.cookieJar,
             json: {
-              staffName: 'Test Staff',
-              staffEmail: 'testing@testing.com',
-              staffPassword: 'testing',
-              staffPasswordConfirm: 'testing'
+              name: 'Test Staff',
+              email: 'testing@testing.com',
+              password: 'testing',
+              passwordConfirm: 'testing'
             }
           })
         })
         .then((res) => {
+          if(res.body.error) throw new Error(res.body.error)
           expect(res.body.staff.id).to.be.a('number')
           staffId = +res.body.staff.id
         })
@@ -115,13 +118,14 @@ exports.admin = (app,params) => {
         jar: params.cookieJar,
         json: {
           id: staffId,
-          staffName: 'Test Staff 2',
-          staffEmail: 'testing@testing.com',
-          staffPassword: 'testing2',
-          staffPasswordConfirm: 'testing2'
+          name: 'Test Staff 2',
+          email: 'testing@testing.com',
+          password: 'testing2',
+          passwordConfirm: 'testing2'
         }
       })
         .then((res) => {
+          if(res.body.error) throw new Error(res.body.error)
           expect(res.body.staff.id).to.be.a('number')
           expect(+res.body.staff.id).to.equal(staffId)
         })

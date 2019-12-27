@@ -75,9 +75,9 @@ exports.search = (app,keywords,start,limit) => {
 exports.admin = (app) => {
   const K = app
   const base64 = require('base64-js')
-  const Blog = require(app.lib('Blog')).getInstance()
-  const datatableView = require(app.lib('datatableView'))
-  const tuiEditor = require(app.lib('tuiEditor'))
+  const Blog = require('./lib/Blog').getInstance()
+  const datatableView = require('../../lib/datatableView')
+  const tuiEditor = require('../../lib/tuiEditor')
   //register permissions
   app.permission.add('/blog/create','Create blog')
   app.permission.add('/blog/save','Save blog')
@@ -196,8 +196,8 @@ exports.admin = (app) => {
 exports.main = (app) => {
   const K = app
   const base64 = require('base64-js')
-  const Blog = require(app.lib('Blog')).getInstance()
-  const tuiViewer = require(app.lib('tuiViewer'))
+  const Blog = require('./lib/Blog').getInstance()
+  const tuiViewer = require('../../lib/tuiViewer')
   //register views
   app.view.add('blog/entry',__dirname + '/main/view/entry.html')
   app.view.add('blog/list',__dirname + '/main/view/list.html')
@@ -252,7 +252,7 @@ exports.main = (app) => {
  * @param {Kado} app Main application
  */
 exports.cli = (app) => {
-  const Blog = require(app.lib('Blog')).getInstance()
+  const Blog = require('./lib/Blog').getInstance()
   app.cli.command('blog','create',{
     description: 'Create new blog entry',
     options: [
@@ -260,12 +260,15 @@ exports.cli = (app) => {
       {definition: '-u, --uri <s>', description: 'Blog URI'},
       {definition: '-c, --content <s>', description: 'Blog Content'}
     ],
-    action: (app,opts)=>{
+    action: (opts)=>{
+      const title = opts.title || opts.t
+      const uri = opts.uri || opts.u
+      const content = opts.content || opts.c
       return Blog.save({
-        title: opts.title,
-        uri: opts.title.replace(/[\s]+/g,'-').toLowerCase(),
-        content: opts.content,
-        html: opts.content,
+        title: title,
+        uri: uri || title.replace(/[\s]+/g,'-').toLowerCase(),
+        content: content,
+        html: content,
         active: true
       }).then((result) => { return 'Blog entry created: ' + result.id })
     }
@@ -278,14 +281,17 @@ exports.cli = (app) => {
       {definition: '-u, --uri <s>', description: 'Blog URI'},
       {definition: '-c, --content <s>', description: 'Blog Content'}
     ],
-    action: (app,opts)=>{
-      if(!opts.id) throw new Error('Blog id is required')
+    action: (opts)=>{
+      const id = opts.id || opts.i
+      const title = opts.title || opts.t
+      const uri = opts.uri || opts.u
+      const content = opts.content || opts.c
+      if(!id) throw new Error('Blog id is required')
       return Blog.save({
-        id: opts.id,
-        title: opts.title,
-        uri: opts.uri,
-        content: opts.content,
-        html: opts.html
+        id: id,
+        title: title,
+        uri: uri,
+        content: content
       })
         .then(() => { return 'Blog entry updated successfully!' })
     }
@@ -295,9 +301,10 @@ exports.cli = (app) => {
     options: [
       {definition: '-i, --id <s>', description: 'Blog ID'},
     ],
-    action: (app,opts)=>{
-      if(!opts.id) throw new Error('Blog id is required')
-      return Blog.remove(opts.id)
+    action: (opts)=>{
+      const id = opts.id || opts.i
+      if(!id) throw new Error('Blog id is required')
+      return Blog.remove(id)
         .then(() => { return 'Blog entry removed successfully!' })
     }
   })

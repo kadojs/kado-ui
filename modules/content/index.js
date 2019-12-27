@@ -76,8 +76,8 @@ exports.search = (app,keywords,start,limit) => {
  * @param {Kado} app Main application
  */
 exports.admin = (app) => {
-  const Content = require(app.lib('Content')).getInstance()
-  const ContentNav = require(app.lib('ContentNav')).getInstance()
+  const Content = require('./lib/Content').getInstance()
+  const ContentNav = require('./lib/ContentNav').getInstance()
   //register permissions
   app.permission.add('/content/create','Create Content')
   app.permission.add('/content/save','Save Content')
@@ -108,6 +108,7 @@ exports.admin = (app) => {
     res.redirect(301,'/content/list')
   })
   app.get('/content/list',(req,res)=>{
+    const datatableView = require('../../lib/datatableView')
     if(!req.query.length){
       datatableView(res)
       res.render(
@@ -280,8 +281,8 @@ exports.admin = (app) => {
 exports.main = (app) => {
   const fs = require('fs')
   const base64 = require('base64-js')
-  const tuiViewer = require(app.lib('tuiViewer'))
-  const Content = require(app.lib('Content')).getInstance()
+  const tuiViewer = require('../../lib/tuiViewer')
+  const Content = require('./lib/Content').getInstance()
   app.get('/content',(req,res)=>{res.redirect(301,'/')})
   //register routes
   app.get('/content/:contentUri',(req,res)=>{
@@ -334,7 +335,7 @@ exports.main = (app) => {
  * @param {Kado} app Main application
  */
 exports.cli = (app) => {
-  const Content = require(app.lib('Content')).getInstance()
+  const Content = require('./lib/Content').getInstance()
   app.cli.command('content','create',{
     description: 'Create new content entry',
     options: [
@@ -342,14 +343,17 @@ exports.cli = (app) => {
       {definition: '-u, --uri <s>', description: 'Content URI'},
       {definition: '-c, --content <s>', description: 'Content Data'}
     ],
-    action: (app,opts)=>{
+    action: (opts)=>{
+      const title = opts.title || opts.t
+      const uri = opts.uri || opts.u
+      const content = opts.content || opts.c
       return Content.save({
-        title: opts.title,
-        uri: opts.title.replace(/[\s]+/g,'-').toLowerCase(),
-        content: opts.content,
-        html: opts.content,
+        title: title,
+        uri: uri || title.replace(/[\s]+/g,'-').toLowerCase(),
+        content: content,
+        html: content,
         active: true
-      }).then((result) => { return 'Blog entry created: ' + result.id })
+      }).then((result) => { return 'Content entry created: ' + result.id })
     }
   })
   app.cli.command('content','update',{
@@ -360,14 +364,17 @@ exports.cli = (app) => {
       {definition: '-u, --uri <s>', description: 'Content URI'},
       {definition: '-c, --content <s>', description: 'Content Content'}
     ],
-    action: (app,opts)=>{
-      if(!opts.id) throw new Error('Content id is required')
+    action: (opts)=>{
+      const id = opts.id || opts.i
+      const title = opts.title || opts.t
+      const uri = opts.uri || opts.u
+      const content = opts.content || opts.c
+      if(!id) throw new Error('Content id is required')
       return Content.save({
-        id: opts.id,
-        title: opts.title,
-        uri: opts.uri,
-        content: opts.content,
-        html: opts.html
+        id: id,
+        title: title,
+        uri: uri,
+        content: content
       })
         .then(() => { return 'Content entry updated successfully!' })
     }
@@ -377,9 +384,10 @@ exports.cli = (app) => {
     options: [
       {definition: '-i, --id <s>', description: 'Content ID'},
     ],
-    action: (app,opts)=>{
-      if(!opts.id) throw new Error('Content id is required')
-      return Content.remove(opts.id)
+    action: (opts)=>{
+      const id = opts.id || opts.i
+      if(!id) throw new Error('Content id is required')
+      return Content.remove(id)
         .then(() => { return 'Content entry removed successfully!' })
     }
   })

@@ -80,8 +80,8 @@ exports.search = (app,keywords,start,limit) => {
  * @param {Kado} app Main application
  */
 exports.admin = (app) => {
-  const Doc = require(app.lib('Doc')).getInstance()
-  const tuiEditor = require(app.lib('tuiEditor'))
+  const Doc = require('./lib/Doc').getInstance()
+  const tuiEditor = require('../../lib/tuiEditor')
   //register permissions
   //doc permissions
   app.permission.add('/doc/create','Create Doc')
@@ -125,6 +125,7 @@ exports.admin = (app) => {
     res.redirect(301,'/doc/list')
   })
   app.get('/doc/list',(req,res)=>{
+    const datatableView = require('../../lib/datatableView')
     if(!req.query.length){
       datatableView(res)
       res.render(
@@ -170,13 +171,13 @@ exports.admin = (app) => {
     Doc.save(req.body)
       .then((result) => {
         if(res.isJSON){
-          res.json({item: result.result.dataValues})
+          res.json({item: result.dataValues})
         } else {
           req.flash('success',{
             message: app._l.doc.entry + ' ' +
               (result.isNew ? app._l.created : app._l.saved),
             href: app.uri.get('/doc/edit') + '?id=' + doc.id,
-            name: result.result.id
+            name: result.id
           })
           res.redirect(app.uri.get('/doc/list'))
         }
@@ -373,7 +374,7 @@ exports.admin = (app) => {
  * @param {Kado} app Main application
  */
 exports.main = (app) => {
-  const Doc = require(app.lib('Doc')).getInstance()
+  const Doc = require('./lib/Doc').getInstance()
   //register navigation
   app.nav.addGroup('/doc','Documentation','file-alt')
   //register views

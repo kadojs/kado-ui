@@ -73,8 +73,8 @@ exports.search = (app,keywords,start,limit) => {
  * @param {function} done
  */
 exports.authenticate = (app,username,password,done) => {
-  const Staff = require(app.lib('Staff')).getInstance()
-  Staff.authenticate(email,password)
+  const Staff = require('./lib/Staff').getInstance()
+  Staff.authenticate(username,password)
     .then((user) => {
       done(null,true,user.dataValues)
     })
@@ -89,7 +89,7 @@ exports.authenticate = (app,username,password,done) => {
  * @param {Kado} app Main application
  */
 exports.admin = (app) => {
-  const Staff = require(app.lib('Staff')).getInstance()
+  const Staff = require('./lib/Staff').getInstance()
   //register permissions
   app.permission.add('/staff/create','Create staff member')
   app.permission.add('/staff/list','List staff members')
@@ -109,6 +109,7 @@ exports.admin = (app) => {
     res.redirect(301,'/staff/list')
   })
   app.get('/staff/list',(req,res)=>{
+    const datatableView = require('../../lib/datatableView')
     if(!req.query.length){
       datatableView(res)
       res.render(
@@ -156,11 +157,11 @@ exports.admin = (app) => {
     Staff.save(req.body)
       .then((result) => {
         if(res.isJSON){
-          res.json({item: result.result.dataValues})
+          res.json({staff: result.dataValues})
         } else {
           req.flash('success',{
             message: app._l.staff.staff + ' ' +
-              (result.isNew ? app._l.created : app._l.saved),
+              (result.isNewRecord ? app._l.created : app._l.saved),
             href: app.uri.get('/staff/edit') + '?id=' + result.result.id,
             name: result.result.id
           })
@@ -168,7 +169,11 @@ exports.admin = (app) => {
         }
       })
       .catch((err) => {
-        res.render('error',{error: err})
+        if(res.isJSON){
+          res.json({error: err.message})
+        } else {
+          res.render('error',{error: err})
+        }
       })
   })
   app.get('/staff/grant',(req,res)=>{
@@ -210,7 +215,6 @@ exports.admin = (app) => {
       })
   })
   app.post('/staff/remove',(req,res)=>{
-    if(req.query.id) req.body.remove = req.query.id.split(',')
     Staff.remove(req.body.remove)
       .then(() => {
         if(res.isJSON){
@@ -236,7 +240,7 @@ exports.admin = (app) => {
  * @param {Kado} app Main application
  */
 exports.cli = (app) => {
-  const Staff = require(app.lib('Staff')).getInstance()
+  const Staff = require('./lib/Staff').getInstance()
   app.cli.command('staff','create',{
     description: 'Create staff member',
     options: [
@@ -244,11 +248,11 @@ exports.cli = (app) => {
       {definition: '-p, --password <s>', description: 'Password'},
       {definition: '-n, --name <s>', description: 'Name'}
     ],
-    action: (app,opts)=>{
+    action: (opts)=>{
       const params = {
-        email: opts.email,
-        password: opts.password,
-        name: opts.name,
+        email: opts.email || opts.e,
+        password: opts.password || opts.p,
+        name: opts.name || opts.n,
         active: true
       }
       return Staff.save(params)
@@ -270,12 +274,12 @@ exports.cli = (app) => {
       {definition: '-p, --password <s>', description: 'Password'},
       {definition: '-n, --name <s>', description: 'Name'}
     ],
-    action: (app,opts)=>{
-      const params = { email: opts.email }
-      if(opts.newEmail) params.email = opts.newEmail
-      if(opts.password) params.password = opts.password
-      if(opts.name) params.name = opts.name
-      return Staff.getByEmail(opts.email)
+    action: (opts)=>{
+      const params = { email: opts.email || opts.e }
+      if(opts.newEmail) params.email = opts.newEmail || opts.E
+      if(opts.password) params.password = opts.password || opts.p
+      if(opts.name) params.name = opts.name || opts.n
+      return Staff.getByEmail(params.email)
         .then((result)=>{
           if(!result) throw new Error('Staff member not found')
           params.id = result.id
@@ -293,11 +297,10 @@ exports.cli = (app) => {
         description: 'Email of staff member to remove'
       },
     ],
-    action: (app,opts)=>{
-      console.log('RMOVE1')
-      if(!opts.email) throw new Error('Staff email is required')
-      return 'Staff member removed successfully!'
-      return Staff.removeByEmail(opts.email)
+    action: (opts)=>{
+      const email = opts.email || opts.e
+      if(!email) throw new Error('Staff email is required')
+      return Staff.removeByEmail(email)
         .then(() => { return 'Staff member removed successfully!' })
         .catch((err) => { return err.message })
     }
@@ -314,12 +317,14 @@ exports.cli = (app) => {
         description: 'Name of permission to grant, usually URI'
       }
     ],
-    action: (app,opts)=>{
-      if(!opts.email || !opts.perm) throw new Error('Email and Perm required')
-      return Staff.getByEmail(opts.email)
+    action: (opts)=>{
+      const email = opts.email || opts.e
+      const perm = opts.perm || opts.email
+      if(!email || !perm) throw new Error('Email and Perm required')
+      return Staff.getByEmail(email)
         .then((result) => {
           if(!result) throw new Error('Staff member not found')
-          return Staff.grant({id: result.id, name: opts.perm})
+          return Staff.grant({id: result.id, name: perm})
         })
         .then(()=>{ return 'Staff member permission granted!' })
         .catch((err) => { return err.message })
@@ -337,12 +342,14 @@ exports.cli = (app) => {
         description: 'Name of permission to revoke, usually URI'
       }
     ],
-    action: (app,opts)=>{
-      if(!opts.email || !opts.perm) throw new Error('Email and Perm required')
-      return Staff.getByEmail(opts.email)
+    action: (opts)=>{
+      const email = opts.email || opts.e
+      const perm = opts.perm || opts.p
+      if(!email || !perm) throw new Error('Email and Perm required')
+      return Staff.getByEmail(email)
         .then((result) => {
           if(!result) throw new Error('Staff member not found')
-          return Staff.revoke({id: result.id, name: opts.perm})
+          return Staff.revoke({id: result.id, name: perm})
         })
         .then(()=>{ return 'Staff member permission revoked!' })
         .catch((err) => { return err.message })

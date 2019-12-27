@@ -25,10 +25,10 @@ exports._kado ={
  * @param {Kado} app
  */
 exports.admin = (app) => {
-  const datatableView = require(app.lib('datatableView'))
+  const datatableView = require('../../lib/datatableView')
   const fs = require('fs')
   const path = require('path')
-  const Setting = require(app.lib('Setting')).getInstance()
+  const Setting = require('./lib/Setting').getInstance()
   Setting.setConfig(app.config)
   let definitionFile = path.resolve(path.join(__dirname,'definitions.json'))
   if(fs.existsSync(definitionFile))

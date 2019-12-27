@@ -91,6 +91,11 @@ class Blog {
         blog.html = data.html
         return blog.save()
       })
+      .then((result)=>{
+        result.isNew = isNew
+        result.isNewRevision = isNewRevision
+        return result
+      })
   }
   revert(data){
     const that = this
