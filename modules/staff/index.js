@@ -109,9 +109,9 @@ exports.admin = (app) => {
     res.redirect(301,'/staff/list')
   })
   app.get('/staff/list',(req,res)=>{
-    const datatableView = require('../../lib/datatableView')
+    const Datatable = require('../../lib/Datatable').getInstance()
     if(!req.query.length){
-      datatableView(res)
+      Datatable.view(res)
       res.render(
         'staff/list',
         {_pageTitle: app._l.staff.staff + ' ' + app._l.list}

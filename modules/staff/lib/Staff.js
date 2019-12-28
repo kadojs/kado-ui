@@ -10,7 +10,7 @@
 module.exports = class Staff {
   static getInstance(){ return new Staff() }
   constructor(){
-    this.app = require('kado').getInstance()
+    this.app = require('../../../lib/Kado').getInstance()
     this.NOW = this.app.db.sequelize.fn('NOW')
     this.Staff = this.app.db.sequelize.models.Staff
     this.StaffPermission = this.app.db.sequelize.models.StaffPermission

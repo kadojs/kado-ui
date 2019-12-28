@@ -25,7 +25,7 @@ exports._kado ={
  * @param {Kado} app
  */
 exports.admin = (app) => {
-  const datatableView = require('../../lib/datatableView')
+  const datatableView = require('../../lib/Datatable')
   const fs = require('fs')
   const path = require('path')
   const Setting = require('./lib/Setting').getInstance()

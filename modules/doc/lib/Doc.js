@@ -7,7 +7,7 @@
  * This file is part of Kado and bound to the MIT license distributed within.
  */
 const P = require('bluebird')
-const K = require('kado').getInstance()
+const K = require('../../../lib/Kado').getInstance()
 const crypto = require('crypto')
 const datatable = require('sequelize-datatable')
 const sequelize = K.db.sequelize

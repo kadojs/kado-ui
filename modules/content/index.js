@@ -108,9 +108,9 @@ exports.admin = (app) => {
     res.redirect(301,'/content/list')
   })
   app.get('/content/list',(req,res)=>{
-    const datatableView = require('../../lib/datatableView')
+    const Datatable = require('../../lib/Datatable').getInstance()
     if(!req.query.length){
-      datatableView(res)
+      Datatable.view(res)
       res.render(
         'content/list',
         {_pageTitle: app._l.content.content + ' ' + app._l.list}
@@ -281,7 +281,7 @@ exports.admin = (app) => {
 exports.main = (app) => {
   const fs = require('fs')
   const base64 = require('base64-js')
-  const tuiViewer = require('../../lib/tuiViewer')
+  const ToastEditor = require('../../lib/ToastEditor').getInstance()
   const Content = require('./lib/Content').getInstance()
   app.get('/content',(req,res)=>{res.redirect(301,'/')})
   //register routes
@@ -308,7 +308,7 @@ exports.main = (app) => {
           }
         } else {
           //load tui viewer
-          tuiViewer(res)
+          ToastEditor.viewer(res)
           res.locals._asset.addScriptOnce('/js/loadTuiViewer.js')
           result.contentRaw = result.content
           result.content = base64.fromByteArray(

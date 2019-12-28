@@ -7,7 +7,7 @@
  * This file is part of Kado and bound to the MIT license distributed within.
  */
 const datatable = require('sequelize-datatable')
-const K = require('kado').getInstance()
+const K = require('../../../lib/Kado').getInstance()
 const P = require('bluebird')
 const ContentNavModel = K.db.sequelize.models.ContentNav
 class ContentNav {

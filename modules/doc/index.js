@@ -81,7 +81,7 @@ exports.search = (app,keywords,start,limit) => {
  */
 exports.admin = (app) => {
   const Doc = require('./lib/Doc').getInstance()
-  const tuiEditor = require('../../lib/tuiEditor')
+  const tuiEditor = require('../../lib/ToastEditor')
   //register permissions
   //doc permissions
   app.permission.add('/doc/create','Create Doc')
@@ -125,9 +125,9 @@ exports.admin = (app) => {
     res.redirect(301,'/doc/list')
   })
   app.get('/doc/list',(req,res)=>{
-    const datatableView = require('../../lib/datatableView')
+    const Datatable = require('../../lib/Datatable').getInstance()
     if(!req.query.length){
-      datatableView(res)
+      Datatable.view(res)
       res.render(
         'doc/list',
         {_pageTitle: app._l.doc.doc + ' ' + app._l.list}
@@ -222,7 +222,7 @@ exports.admin = (app) => {
   })
   app.get('/doc/project/list',(req,res)=>{
     if(!req.query.length){
-      datatableView(res)
+      Datatable.view(res)
       res.render(
         'doc/project/list',
         {_pageTitle: app._l.doc.doc_project + ' ' + app._l.list}

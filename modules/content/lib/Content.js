@@ -8,7 +8,7 @@
  */
 const crypto = require('crypto')
 const datatable = require('sequelize-datatable')
-const K = require('kado').getInstance()
+const K = require('../../../lib/Kado').getInstance()
 const P = require('bluebird')
 const ContentModel = K.db.sequelize.models.Content
 const ContentRevisionModel = K.db.sequelize.models.ContentRevision

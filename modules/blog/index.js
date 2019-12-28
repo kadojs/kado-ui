@@ -76,8 +76,8 @@ exports.admin = (app) => {
   const K = app
   const base64 = require('base64-js')
   const Blog = require('./lib/Blog').getInstance()
-  const datatableView = require('../../lib/datatableView')
-  const tuiEditor = require('../../lib/tuiEditor')
+  const Datatable = require('../../lib/Datatable').getInstance()
+  const ToastEditor = require('../../lib/ToastEditor').getInstance()
   //register permissions
   app.permission.add('/blog/create','Create blog')
   app.permission.add('/blog/save','Save blog')
@@ -99,7 +99,7 @@ exports.admin = (app) => {
   })
   app.get('/blog/list',(req,res)=> {
     if(!req.query.length){
-      datatableView(res)
+      Datatable.view(res)
       res.render('blog/list',{_pageTitle: K._l.blog.blog + ' ' + K._l.list})
     } else {
       Blog.datatable(req,res).then((result) => { res.json(result) })
@@ -112,7 +112,7 @@ exports.admin = (app) => {
     res.render('blog/create',{_pageTitle: K._l.blog.blog + ' ' + K._l.create})
   })
   app.get('/blog/edit',(req,res)=> {
-    tuiEditor(res)
+    ToastEditor.editor(res)
     app.asset.addScriptOnce('/js/loadTuiEditor.js')
     app.asset.addScriptOnce('/blog/static/blogEdit.js')
     Blog.get(query.query.id,res.Q)
@@ -197,7 +197,7 @@ exports.main = (app) => {
   const K = app
   const base64 = require('base64-js')
   const Blog = require('./lib/Blog').getInstance()
-  const tuiViewer = require('../../lib/tuiViewer')
+  const ToastEditor = require('../../lib/ToastEditor').getInstance()
   //register views
   app.view.add('blog/entry',__dirname + '/main/view/entry.html')
   app.view.add('blog/list',__dirname + '/main/view/list.html')
@@ -217,7 +217,7 @@ exports.main = (app) => {
       })
   })
   app.get('/blog/:blogUri',(req,res)=>{
-    tuiViewer(res)
+    ToastEditor.viewer(res)
     app.asset.addScriptOnce('/js/loadTuiViewer.js')
     Blog.getByUri(req.params.blogUri,res.Q)
       .then((result) => {
